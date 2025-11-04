@@ -74,9 +74,7 @@ const OPattern = ({ fun, ID }) => {
     // Disable auto-save to prevent refresh
     saveModeInStorage: false,
     // Prevent unnecessary re-renders
-    askBeforePasteHTML: false,
-    askBeforePasteFromWord: false,
-    defaultActionOnPaste: "insert_clear_html",
+    // (keys defined above)
   }), []);
 
   // JoditEditor change handler

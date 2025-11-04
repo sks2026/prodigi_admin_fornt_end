@@ -201,7 +201,12 @@ const AdminDashboard = () => {
                             <EnterCustomerDetails onNavigate={handleCustomerServiceNavigation} />
                         )
                     ) : activeTab === 'Organizer Support' ? (
-                        <OrganizerSupportPage />
+                        <OrganizerSupportPage
+                            onCreateRequest={(data) => {
+                                handleTabChange('Customer Service');
+                                handleCustomerServiceNavigation('create-new-request', data);
+                            }}
+                        />
                     ) : activeTab === 'User Management' ? (
                         <UserManagementPage />
                     ) : activeTab === 'Data Management' ? (

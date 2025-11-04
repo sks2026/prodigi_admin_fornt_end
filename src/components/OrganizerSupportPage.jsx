@@ -3,7 +3,7 @@ import OrganizerForm from './OrganizerForm'
 import OrganizerOverview from './OrganizerOverview'
 import OrganizerHistory from './OrganizerHistory'
 
-const OrganizerSupportPage = () => {
+const OrganizerSupportPage = ({ onCreateRequest }) => {
     const [step, setStep] = useState(1)
     const [form, setForm] = useState({ organiserId: '' })
     const [organizerData, setOrganizerData] = useState(null)
@@ -32,6 +32,7 @@ const OrganizerSupportPage = () => {
                 <OrganizerOverview
                     organizerData={organizerData}
                     onShowHistory={() => setStep(3)}
+                    onCreateRequest={onCreateRequest}
                 />
             )}
 

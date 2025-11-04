@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import CompetitionDetailsModal from './CompetitionDetailsModal'
 import CreateCompetitionModal from './CreateCompetitionModal'
 
-const OrganizerOverview = ({ onShowHistory, organizerData }) => {
+const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) => {
     const [activeTab, setActiveTab] = useState('requests') // 'requests' or 'competitions'
     const [competitions, setCompetitions] = useState([])
     const [requests, setRequests] = useState([])
@@ -89,7 +89,8 @@ const OrganizerOverview = ({ onShowHistory, organizerData }) => {
     // Fetch requests when organizerData changes
     useEffect(() => {
         const fetchRequests = async () => {
-            if (!organizerData?._id) {
+            const customerId = organizerData?.organisationId || organizerData?._id
+            if (!customerId) {
                 setRequests([])
                 return
             }
@@ -98,18 +99,15 @@ const OrganizerOverview = ({ onShowHistory, organizerData }) => {
             setRequestsError('')
 
             try {
-                const response = await fetch(
-                    `http://localhost:3001/api/requests/getByOrganizerId?organizerId=${organizerData._id}`
-                )
+                const response = await fetch(`http://localhost:3001/api/customer-requests/my-requests/${customerId}`)
+                const result = await response.json()
 
-                const data = await response.json()
-
-                if (response.ok && data.status) {
-                    setRequests(data.data || [])
+                if (response.ok && result.success && result.data && Array.isArray(result.data.requests)) {
+                    setRequests(result.data.requests)
                     setRequestsError('')
                 } else {
                     setRequests([])
-                    setRequestsError(data.message || 'Failed to fetch requests')
+                    setRequestsError(result.message || 'Failed to fetch requests')
                 }
             } catch (err) {
                 setRequests([])
@@ -300,33 +298,34 @@ const OrganizerOverview = ({ onShowHistory, organizerData }) => {
                                             {request.customerName || organizerData?.organiserName || 'N/A'}
                                         </td>
                                         <td style={{ padding: '12px 16px', fontSize: '14px' }}>
-                                            {request.requestType || request.type || 'N/A'}
+                                            {request.request || request.requestType || request.type || 'N/A'}
                                         </td>
                                         <td style={{ padding: '12px 16px', fontSize: '14px' }}>
                                             {request.raisedBy || request.createdBy || 'N/A'}
                                         </td>
                                         <td style={{ padding: '12px 16px' }}>
-                                            <span style={{
-                                                padding: '6px 14px',
-                                                borderRadius: '20px',
-                                                fontSize: '12px',
-                                                fontWeight: '500',
-                                                backgroundColor:
-                                                    request.status === 'Open' ? '#fef3c7' :
-                                                    request.status === 'In progress' ? '#fef3c7' :
-                                                    request.status === 'Closed' ? '#d1fae5' : '#f3f4f6',
-                                                color:
-                                                    request.status === 'Open' ? '#d97706' :
-                                                    request.status === 'In progress' ? '#d97706' :
-                                                    request.status === 'Closed' ? '#059669' : '#6b7280',
-                                                border: '1px solid',
-                                                borderColor:
-                                                    request.status === 'Open' ? '#fcd34d' :
-                                                    request.status === 'In progress' ? '#fcd34d' :
-                                                    request.status === 'Closed' ? '#6ee7b7' : '#e5e7eb'
-                                            }}>
-                                                {request.status || 'Open'}
-                                            </span>
+                                            {(() => {
+                                                const s = (request.status || '').toString()
+                                                const sl = s.toLowerCase()
+                                                const bg = sl === 'open' || sl === 'in progress' ? '#fef3c7' : sl === 'closed' ? '#d1fae5' : '#f3f4f6'
+                                                const color = sl === 'open' || sl === 'in progress' ? '#d97706' : sl === 'closed' ? '#059669' : '#6b7280'
+                                                const borderColor = sl === 'open' || sl === 'in progress' ? '#fcd34d' : sl === 'closed' ? '#6ee7b7' : '#e5e7eb'
+                                                const label = s ? s.charAt(0).toUpperCase() + s.slice(1) : 'Open'
+                                                return (
+                                                    <span style={{
+                                                        padding: '6px 14px',
+                                                        borderRadius: '20px',
+                                                        fontSize: '12px',
+                                                        fontWeight: '500',
+                                                        backgroundColor: bg,
+                                                        color,
+                                                        border: '1px solid',
+                                                        borderColor
+                                                    }}>
+                                                        {label}
+                                                    </span>
+                                                )
+                                            })()}
                                         </td>
                                     </tr>
                                 ))}
@@ -394,17 +393,17 @@ const OrganizerOverview = ({ onShowHistory, organizerData }) => {
                                                 fontWeight: '500',
                                                 backgroundColor:
                                                     comp.status === 'Open' ? '#fef3c7' :
-                                                    comp.status === 'In progress' ? '#fef3c7' :
-                                                    comp.status === 'Closed' ? '#d1fae5' : '#fef3c7',
+                                                        comp.status === 'In progress' ? '#fef3c7' :
+                                                            comp.status === 'Closed' ? '#d1fae5' : '#fef3c7',
                                                 color:
                                                     comp.status === 'Open' ? '#d97706' :
-                                                    comp.status === 'In progress' ? '#d97706' :
-                                                    comp.status === 'Closed' ? '#059669' : '#d97706',
+                                                        comp.status === 'In progress' ? '#d97706' :
+                                                            comp.status === 'Closed' ? '#059669' : '#d97706',
                                                 border: '1px solid',
                                                 borderColor:
                                                     comp.status === 'Open' ? '#fcd34d' :
-                                                    comp.status === 'In progress' ? '#fcd34d' :
-                                                    comp.status === 'Closed' ? '#6ee7b7' : '#fcd34d'
+                                                        comp.status === 'In progress' ? '#fcd34d' :
+                                                            comp.status === 'Closed' ? '#6ee7b7' : '#fcd34d'
                                             }}>
                                                 {comp.status || (comp.iscomplete ? 'Closed' : 'Open')}
                                             </span>
@@ -415,6 +414,7 @@ const OrganizerOverview = ({ onShowHistory, organizerData }) => {
                         </table>
                     )
                 )}
+
             </div>
 
             <div style={{ display: 'flex', gap: 12, marginTop: 20 }}>
@@ -431,6 +431,7 @@ const OrganizerOverview = ({ onShowHistory, organizerData }) => {
                         cursor: 'pointer',
                         transition: 'background-color 0.2s'
                     }}
+                    onClick={() => onCreateRequest && onCreateRequest(organizerData)}
                     onMouseEnter={(e) => e.target.style.backgroundColor = '#15803d'}
                     onMouseLeave={(e) => e.target.style.backgroundColor = '#16a34a'}
                 >
