@@ -53,7 +53,7 @@ const ModifyMobileRequest = ({ onBack, onSuccess }) => {
 
     try {
       // First, verify the user with old mobile number
-      const verifyResponse = await fetch('https://api.prodigiedu.com/api/users/verify-user', {
+      const verifyResponse = await fetch('http://localhost:3001/api/users/verify-user', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -74,7 +74,7 @@ const ModifyMobileRequest = ({ onBack, onSuccess }) => {
       }
 
       // Create the request
-      const requestResponse = await fetch(`https://api.prodigiedu.com/api/customer-requests/create/${verifyData.data.userId}`, {
+      const requestResponse = await fetch(`http://localhost:3001/api/customer-requests/create/${verifyData.data.userId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

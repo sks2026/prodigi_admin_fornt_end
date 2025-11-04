@@ -159,7 +159,7 @@ const CreateNewRequest = ({ onNavigate, customerData }) => {
         redirect: "follow"
       };
 
-      const response = await fetch(`https://api.prodigiedu.com/api/customer-requests/create/${customerId}`, requestOptions);
+      const response = await fetch(`http://localhost:3001/api/customer-requests/create/${customerId}`, requestOptions);
       const result = await response.json();
       
       if (response.ok && result.success) {

@@ -1,58 +1,497 @@
-import React from 'react'
+import { useState, useEffect } from 'react'
+import CompetitionDetailsModal from './CompetitionDetailsModal'
+import CreateCompetitionModal from './CreateCompetitionModal'
 
-const OrganizerOverview = ({ rows, onShowHistory }) => (
-    <div>
-        <h2>Organiser Overview</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32, maxWidth: 980, marginTop: 16 }}>
-            <div>
-                <div style={{ margin: '6px 0' }}><strong>Name:</strong> Indian Olympiad Foundation</div>
-                <div style={{ margin: '6px 0' }}><strong>Location:</strong> Kota</div>
-                <div style={{ margin: '6px 0' }}><strong>Account Created On:</strong> 1st Sep 2025</div>
-                <div style={{ margin: '6px 0' }}><strong>Account Status:</strong> Active</div>
-            </div>
-            <div>
-                <div style={{ margin: '6px 0' }}><strong>Admin Name:</strong> Lokesh Khandelwal</div>
-                <div style={{ margin: '6px 0' }}><strong>Admin Mobile No.:</strong> +91 9876543210</div>
-                <div style={{ margin: '6px 0' }}><strong>Admin Email ID:</strong> lokesh@gmail.com</div>
-                <div style={{ margin: '6px 0' }}><strong>RM Name:</strong> Saumyata Khandelwal</div>
-            </div>
-        </div>
+const OrganizerOverview = ({ onShowHistory, organizerData }) => {
+    const [activeTab, setActiveTab] = useState('requests') // 'requests' or 'competitions'
+    const [competitions, setCompetitions] = useState([])
+    const [requests, setRequests] = useState([])
+    const [loading, setLoading] = useState(false)
+    const [requestsLoading, setRequestsLoading] = useState(false)
+    const [error, setError] = useState('')
+    const [requestsError, setRequestsError] = useState('')
+    const [stats, setStats] = useState({ total: 0, complete: 0, incomplete: 0 })
+    const [selectedCompetitionId, setSelectedCompetitionId] = useState(null)
+    const [showModal, setShowModal] = useState(false)
+    const [showCreateCompModal, setShowCreateCompModal] = useState(false)
 
-        <div style={{ marginTop: 20, border: '1px solid #e5e7eb', borderRadius: 8, overflow: 'hidden' }}>
-            <div style={{ display: 'flex', gap: 16, padding: '10px 16px', background: '#f3f4f6', borderBottom: '1px solid #e5e7eb' }}>
-                <button className="btn" type="button">Open Requests</button>
-                <button className="btn" type="button" onClick={onShowHistory}>Activity History</button>
-            </div>
-            <table className="table">
-                <thead>
-                    <tr>
-                        <th>Reference ID</th>
-                        <th>Customer Name</th>
-                        <th>Request</th>
-                        <th>Raised by</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {rows.map((r) => (
-                        <tr key={r.id}>
-                            <td><input type="checkbox" style={{ marginRight: 28 }} /> {r.id}</td>
-                            <td>{r.name}</td>
-                            <td>{r.req}</td>
-                            <td>{r.raisedBy}</td>
-                            <td><button type="button" className={`status ${r.status}`}>{r.status === 'progress' ? 'In progress' : r.status.charAt(0).toUpperCase() + r.status.slice(1)}</button></td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
+    const handleViewCompetition = (competitionId) => {
+        setSelectedCompetitionId(competitionId)
+        setShowModal(true)
+    }
 
-        <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
-            <button type="button" className="btn-primary">Create New Request</button>
-            <button type="button" className="btn-outline">Send Report</button>
+    const handleCloseModal = () => {
+        setShowModal(false)
+        setSelectedCompetitionId(null)
+    }
+
+    // Format date
+    const formatDate = (dateString) => {
+        if (!dateString) return 'N/A'
+        const date = new Date(dateString)
+        return date.toLocaleDateString('en-IN', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric'
+        })
+    }
+
+    // Get location from address
+    const getLocation = () => {
+        if (!organizerData?.organiserAddress) return 'N/A'
+        const { cityDistrict, country } = organizerData.organiserAddress
+        if (cityDistrict && country) return `${cityDistrict}, ${country}`
+        return cityDistrict || country || 'N/A'
+    }
+
+    // Fetch competitions when organizerData changes
+    useEffect(() => {
+        const fetchCompetitions = async () => {
+            if (!organizerData?._id) {
+                setCompetitions([])
+                return
+            }
+
+            setLoading(true)
+            setError('')
+
+            try {
+                const response = await fetch(
+                    `http://localhost:3001/api/competitions/getAllByOrganizerId?organizerId=${organizerData._id}`
+                )
+
+                const data = await response.json()
+
+                if (response.ok && data.status) {
+                    setCompetitions(data.data.competitions || [])
+                    setStats({
+                        total: data.data.total || 0,
+                        complete: data.data.complete || 0,
+                        incomplete: data.data.incomplete || 0
+                    })
+                    setError('')
+                } else {
+                    setCompetitions([])
+                    setError(data.message || 'Failed to fetch competitions')
+                }
+            } catch (err) {
+                setCompetitions([])
+                setError('Failed to fetch competitions. Please try again.')
+                console.error('Error fetching competitions:', err)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchCompetitions()
+    }, [organizerData])
+
+    // Fetch requests when organizerData changes
+    useEffect(() => {
+        const fetchRequests = async () => {
+            if (!organizerData?._id) {
+                setRequests([])
+                return
+            }
+
+            setRequestsLoading(true)
+            setRequestsError('')
+
+            try {
+                const response = await fetch(
+                    `http://localhost:3001/api/requests/getByOrganizerId?organizerId=${organizerData._id}`
+                )
+
+                const data = await response.json()
+
+                if (response.ok && data.status) {
+                    setRequests(data.data || [])
+                    setRequestsError('')
+                } else {
+                    setRequests([])
+                    setRequestsError(data.message || 'Failed to fetch requests')
+                }
+            } catch (err) {
+                setRequests([])
+                setRequestsError('Failed to fetch requests. Please try again.')
+                console.error('Error fetching requests:', err)
+            } finally {
+                setRequestsLoading(false)
+            }
+        }
+
+        fetchRequests()
+    }, [organizerData])
+
+    return (
+        <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <h2 style={{ margin: 0 }}>Organiser Overview</h2>
+                {organizerData && (
+                    <span style={{
+                        padding: '6px 16px',
+                        borderRadius: 6,
+                        fontSize: '14px',
+                        fontWeight: 'bold',
+                        backgroundColor: organizerData.status ? '#e6f7e6' : '#ffe6e6',
+                        color: organizerData.status ? 'green' : 'red'
+                    }}>
+                        {organizerData.status ? 'Active' : 'Inactive'}
+                    </span>
+                )}
+            </div>
+
+            {!organizerData ? (
+                <div style={{
+                    padding: '20px',
+                    backgroundColor: '#f9f9f9',
+                    border: '1px solid #e0e0e0',
+                    borderRadius: 8,
+                    textAlign: 'center',
+                    color: '#666'
+                }}>
+                    No organizer data available. Please search for an organizer first.
+                </div>
+            ) : (
+                <>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32, maxWidth: 980, marginTop: 16 }}>
+                        <div>
+                            <div style={{ margin: '6px 0' }}>
+                                <strong>Organization Name:</strong> {organizerData.organiserName || organizerData.name || 'N/A'}
+                            </div>
+                            <div style={{ margin: '6px 0' }}>
+                                <strong>Location:</strong> {getLocation()}
+                            </div>
+                            <div style={{ margin: '6px 0' }}>
+                                <strong>Account Created On:</strong> {formatDate(organizerData.createdAt)}
+                            </div>
+                            <div style={{ margin: '6px 0' }}>
+                                <strong>Account Status:</strong>
+                                <span style={{
+                                    marginLeft: 8,
+                                    color: organizerData.status ? 'green' : 'red',
+                                    fontWeight: 'bold'
+                                }}>
+                                    {organizerData.status ? 'Active' : 'Inactive'}
+                                </span>
+                            </div>
+                        </div>
+                        <div>
+                            <div style={{ margin: '6px 0' }}>
+                                <strong>Admin Name:</strong> {organizerData.name || organizerData.directorName || 'N/A'}
+                            </div>
+                            <div style={{ margin: '6px 0' }}>
+                                <strong>Admin Mobile No.:</strong> {organizerData.mobileNumber || organizerData.organiserMobileNumber || 'N/A'}
+                            </div>
+                            <div style={{ margin: '6px 0' }}>
+                                <strong>Admin Email ID:</strong> {organizerData.email || organizerData.organiserEmail || 'N/A'}
+                            </div>
+                            <div style={{ margin: '6px 0' }}>
+                                <strong>Organizer ID:</strong> {organizerData._id || 'N/A'}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* {organizerData.organiserWebsite && (
+                        <div style={{ marginTop: 16 }}>
+                            <strong>Website:</strong>{' '}
+                            <a
+                                href={organizerData.organiserWebsite}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{ color: '#2563eb', textDecoration: 'none' }}
+                            >
+                                {organizerData.organiserWebsite}
+                            </a>
+                        </div>
+                    )} */}
+                </>
+            )}
+
+            <div style={{ marginTop: 32, border: '1px solid #e5e7eb', borderRadius: 8, overflow: 'hidden' }}>
+                {/* Tab Navigation */}
+                <div style={{
+                    display: 'flex',
+                    borderBottom: '2px solid #e5e7eb',
+                    backgroundColor: '#fff'
+                }}>
+                    <button
+                        type="button"
+                        onClick={() => setActiveTab('requests')}
+                        style={{
+                            padding: '12px 24px',
+                            border: 'none',
+                            background: 'transparent',
+                            fontSize: '15px',
+                            fontWeight: '500',
+                            color: activeTab === 'requests' ? '#16a34a' : '#6b7280',
+                            borderBottom: activeTab === 'requests' ? '3px solid #16a34a' : '3px solid transparent',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
+                        }}
+                    >
+                        Open Requests
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setActiveTab('competitions')}
+                        style={{
+                            padding: '12px 24px',
+                            border: 'none',
+                            background: 'transparent',
+                            fontSize: '15px',
+                            fontWeight: '500',
+                            color: activeTab === 'competitions' ? '#16a34a' : '#6b7280',
+                            borderBottom: activeTab === 'competitions' ? '3px solid #16a34a' : '3px solid transparent',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
+                        }}
+                    >
+                        Competitions
+                    </button>
+                </div>
+
+                {/* Tab Content */}
+                {activeTab === 'requests' ? (
+                    /* Open Requests Table */
+                    requestsLoading ? (
+                        <div style={{
+                            padding: '40px',
+                            textAlign: 'center',
+                            color: '#666'
+                        }}>
+                            Loading requests...
+                        </div>
+                    ) : requestsError ? (
+                        <div style={{
+                            padding: '40px',
+                            textAlign: 'center',
+                            color: '#dc2626',
+                            backgroundColor: '#fee2e2'
+                        }}>
+                            {requestsError}
+                        </div>
+                    ) : requests.length === 0 ? (
+                        <div style={{
+                            padding: '40px',
+                            textAlign: 'center',
+                            color: '#666'
+                        }}>
+                            No requests found for this organizer
+                        </div>
+                    ) : (
+                        <table className="table" style={{ margin: 0 }}>
+                            <thead>
+                                <tr style={{ backgroundColor: '#f9fafb' }}>
+                                    <th style={{ padding: '12px 16px', color: '#6b7280', fontWeight: '500', fontSize: '14px' }}>Reference ID</th>
+                                    <th style={{ padding: '12px 16px', color: '#6b7280', fontWeight: '500', fontSize: '14px' }}>Customer Name</th>
+                                    <th style={{ padding: '12px 16px', color: '#6b7280', fontWeight: '500', fontSize: '14px' }}>Request</th>
+                                    <th style={{ padding: '12px 16px', color: '#6b7280', fontWeight: '500', fontSize: '14px' }}>Raised by</th>
+                                    <th style={{ padding: '12px 16px', color: '#6b7280', fontWeight: '500', fontSize: '14px' }}>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {requests.map((request) => (
+                                    <tr key={request._id}>
+                                        <td style={{ padding: '12px 16px', fontSize: '14px', fontFamily: 'monospace' }}>
+                                            {request.referenceId || request._id?.substring(0, 12) || 'N/A'}
+                                        </td>
+                                        <td style={{ padding: '12px 16px', fontSize: '14px' }}>
+                                            {request.customerName || organizerData?.organiserName || 'N/A'}
+                                        </td>
+                                        <td style={{ padding: '12px 16px', fontSize: '14px' }}>
+                                            {request.requestType || request.type || 'N/A'}
+                                        </td>
+                                        <td style={{ padding: '12px 16px', fontSize: '14px' }}>
+                                            {request.raisedBy || request.createdBy || 'N/A'}
+                                        </td>
+                                        <td style={{ padding: '12px 16px' }}>
+                                            <span style={{
+                                                padding: '6px 14px',
+                                                borderRadius: '20px',
+                                                fontSize: '12px',
+                                                fontWeight: '500',
+                                                backgroundColor:
+                                                    request.status === 'Open' ? '#fef3c7' :
+                                                    request.status === 'In progress' ? '#fef3c7' :
+                                                    request.status === 'Closed' ? '#d1fae5' : '#f3f4f6',
+                                                color:
+                                                    request.status === 'Open' ? '#d97706' :
+                                                    request.status === 'In progress' ? '#d97706' :
+                                                    request.status === 'Closed' ? '#059669' : '#6b7280',
+                                                border: '1px solid',
+                                                borderColor:
+                                                    request.status === 'Open' ? '#fcd34d' :
+                                                    request.status === 'In progress' ? '#fcd34d' :
+                                                    request.status === 'Closed' ? '#6ee7b7' : '#e5e7eb'
+                                            }}>
+                                                {request.status || 'Open'}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )
+                ) : (
+                    /* Competitions Table */
+                    loading ? (
+                        <div style={{
+                            padding: '40px',
+                            textAlign: 'center',
+                            color: '#666'
+                        }}>
+                            Loading competitions...
+                        </div>
+                    ) : error ? (
+                        <div style={{
+                            padding: '40px',
+                            textAlign: 'center',
+                            color: '#dc2626',
+                            backgroundColor: '#fee2e2'
+                        }}>
+                            {error}
+                        </div>
+                    ) : competitions.length === 0 ? (
+                        <div style={{
+                            padding: '40px',
+                            textAlign: 'center',
+                            color: '#666'
+                        }}>
+                            No competitions found for this organizer
+                        </div>
+                    ) : (
+                        <table className="table" style={{ margin: 0 }}>
+                            <thead>
+                                <tr style={{ backgroundColor: '#f9fafb' }}>
+                                    <th style={{ padding: '12px 16px', color: '#6b7280', fontWeight: '500', fontSize: '14px' }}>Reference ID</th>
+                                    <th style={{ padding: '12px 16px', color: '#6b7280', fontWeight: '500', fontSize: '14px' }}>Customer Name</th>
+                                    <th style={{ padding: '12px 16px', color: '#6b7280', fontWeight: '500', fontSize: '14px' }}>Request</th>
+                                    <th style={{ padding: '12px 16px', color: '#6b7280', fontWeight: '500', fontSize: '14px' }}>Raised by</th>
+                                    <th style={{ padding: '12px 16px', color: '#6b7280', fontWeight: '500', fontSize: '14px' }}>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {competitions.map((comp) => (
+                                    <tr key={comp._id}>
+                                        <td style={{ padding: '12px 16px', fontSize: '14px', fontFamily: 'monospace' }}>
+                                            {comp.referenceId || comp._id?.substring(0, 12) || 'N/A'}
+                                        </td>
+                                        <td style={{ padding: '12px 16px', fontSize: '14px' }}>
+                                            {organizerData?.organiserName || organizerData?.name || 'N/A'}
+                                        </td>
+                                        <td style={{ padding: '12px 16px', fontSize: '14px' }}>
+                                            Create Competition
+                                        </td>
+                                        <td style={{ padding: '12px 16px', fontSize: '14px' }}>
+                                            {comp.createdBy || organizerData?.name || 'N/A'}
+                                        </td>
+                                        <td style={{ padding: '12px 16px' }}>
+                                            <span style={{
+                                                padding: '6px 14px',
+                                                borderRadius: '20px',
+                                                fontSize: '12px',
+                                                fontWeight: '500',
+                                                backgroundColor:
+                                                    comp.status === 'Open' ? '#fef3c7' :
+                                                    comp.status === 'In progress' ? '#fef3c7' :
+                                                    comp.status === 'Closed' ? '#d1fae5' : '#fef3c7',
+                                                color:
+                                                    comp.status === 'Open' ? '#d97706' :
+                                                    comp.status === 'In progress' ? '#d97706' :
+                                                    comp.status === 'Closed' ? '#059669' : '#d97706',
+                                                border: '1px solid',
+                                                borderColor:
+                                                    comp.status === 'Open' ? '#fcd34d' :
+                                                    comp.status === 'In progress' ? '#fcd34d' :
+                                                    comp.status === 'Closed' ? '#6ee7b7' : '#fcd34d'
+                                            }}>
+                                                {comp.status || (comp.iscomplete ? 'Closed' : 'Open')}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )
+                )}
+            </div>
+
+            <div style={{ display: 'flex', gap: 12, marginTop: 20 }}>
+                <button
+                    type="button"
+                    style={{
+                        padding: '10px 20px',
+                        backgroundColor: '#16a34a',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '6px',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        transition: 'background-color 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#15803d'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = '#16a34a'}
+                >
+                    Create New Request
+                </button>
+                <button
+                    type="button"
+                    style={{
+                        padding: '10px 20px',
+                        backgroundColor: '#16a34a',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '6px',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        transition: 'background-color 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#15803d'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = '#16a34a'}
+                >
+                    Send Report
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setShowCreateCompModal(true)}
+                    style={{
+                        padding: '10px 20px',
+                        backgroundColor: '#16a34a',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '6px',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        transition: 'background-color 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#15803d'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = '#16a34a'}
+                >
+                    Create Competition
+                </button>
+            </div>
+
+            {/* Competition Details Modal */}
+            {showModal && selectedCompetitionId && (
+                <CompetitionDetailsModal
+                    competitionId={selectedCompetitionId}
+                    onClose={handleCloseModal}
+                />
+            )}
+
+            {/* Create Competition Modal */}
+            <CreateCompetitionModal
+                isOpen={showCreateCompModal}
+                onClose={() => setShowCreateCompModal(false)}
+                organizerData={organizerData}
+            />
         </div>
-    </div>
-)
+    )
+}
 
 export default OrganizerOverview
 
