@@ -25,6 +25,49 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
         setSelectedCompetitionId(null)
     }
 
+    const handleToggleStatus = async (competitionId, currentStatus) => {
+        const newStatus = !currentStatus
+        const confirmMessage = newStatus 
+            ? 'Are you sure you want to close this competition?' 
+            : 'Are you sure you want to open this competition?'
+        
+        if (!window.confirm(confirmMessage)) {
+            return
+        }
+
+        try {
+            const response = await fetch(
+                `https://api.prodigiedu.com/api/competitions/toggleStatus/${competitionId}`,
+                {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                }
+            )
+
+            const data = await response.json()
+
+            if (response.ok && data.success) {
+                // Update the local state
+                setCompetitions(prev =>
+                    prev.map(comp =>
+                        comp._id === competitionId
+                            ? { ...comp, iscomplete: newStatus }
+                            : comp
+                    )
+                )
+                alert(data.message)
+            } else {
+                alert(data.message || 'Failed to update competition status')
+            }
+        } catch (err) {
+            console.error('Error toggling competition status:', err)
+            alert('Failed to update competition status. Please try again.')
+        }
+    }
+
     // Format date
     const formatDate = (dateString) => {
         if (!dateString) return 'N/A'
@@ -57,7 +100,7 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
 
             try {
                 const response = await fetch(
-                    `http://localhost:3001/api/competitions/getAllByOrganizerId?organizerId=${organizerData._id}`
+                    `https://api.prodigiedu.com/api/competitions/getAllByOrganizerId?organizerId=${organizerData._id}`
                 )
 
                 const data = await response.json()
@@ -99,7 +142,7 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
             setRequestsError('')
 
             try {
-                const response = await fetch(`http://localhost:3001/api/customer-requests/my-requests/${customerId}`)
+                const response = await fetch(`https://api.prodigiedu.com/api/customer-requests/my-requests/${customerId}`)
                 const result = await response.json()
 
                 if (response.ok && result.success && result.data && Array.isArray(result.data.requests)) {
@@ -368,6 +411,7 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
                                     <th style={{ padding: '12px 16px', color: '#6b7280', fontWeight: '500', fontSize: '14px' }}>Request</th>
                                     <th style={{ padding: '12px 16px', color: '#6b7280', fontWeight: '500', fontSize: '14px' }}>Raised by</th>
                                     <th style={{ padding: '12px 16px', color: '#6b7280', fontWeight: '500', fontSize: '14px' }}>Status</th>
+                                    <th style={{ padding: '12px 16px', color: '#6b7280', fontWeight: '500', fontSize: '14px' }}>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -407,6 +451,32 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
                                             }}>
                                                 {comp.status || (comp.iscomplete ? 'Closed' : 'Open')}
                                             </span>
+                                        </td>
+                                        <td style={{ padding: '12px 16px' }}>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleToggleStatus(comp._id, comp.iscomplete)}
+                                                style={{
+                                                    padding: '6px 12px',
+                                                    fontSize: '12px',
+                                                    fontWeight: '500',
+                                                    border: '1px solid',
+                                                    borderRadius: '4px',
+                                                    cursor: 'pointer',
+                                                    backgroundColor: comp.iscomplete ? '#dcfce7' : '#fee2e2',
+                                                    color: comp.iscomplete ? '#16a34a' : '#dc2626',
+                                                    borderColor: comp.iscomplete ? '#16a34a' : '#dc2626',
+                                                    transition: 'all 0.2s'
+                                                }}
+                                                onMouseEnter={(e) => {
+                                                    e.target.style.backgroundColor = comp.iscomplete ? '#bbf7d0' : '#fecaca'
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    e.target.style.backgroundColor = comp.iscomplete ? '#dcfce7' : '#fee2e2'
+                                                }}
+                                            >
+                                                {comp.iscomplete ? 'Open' : 'Close'}
+                                            </button>
                                         </td>
                                     </tr>
                                 ))}

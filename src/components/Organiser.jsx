@@ -31,7 +31,7 @@ const Organiser = () => {
   // ✅ Activate
   const makeActive = async (id) => {
     try {
-      const apiUrl = `http://localhost:3001/api/organisations/active/${id}`;
+      const apiUrl = `https://api.prodigiedu.com/api/organisations/active/${id}`;
       await fetch(apiUrl, { method: "GET", headers: { "Content-Type": "application/json" } });
 
       setOrganiser((prev) =>
@@ -45,7 +45,7 @@ const Organiser = () => {
   // ❌ Deactivate
   const makeDeactive = async (id) => {
     try {
-      const apiUrl = `http://localhost:3001/api/organisations/deactive/${id}`;
+      const apiUrl = `https://api.prodigiedu.com/api/organisations/deactive/${id}`;
       await fetch(apiUrl, { method: "GET", headers: { "Content-Type": "application/json" } });
 
       setOrganiser((prev) =>
@@ -59,7 +59,7 @@ const Organiser = () => {
   // ✅ Fetch organisers
   const getOrganiser = async () => {
     try {
-      const res = await fetch("http://localhost:3001/api/organisations/");
+      const res = await fetch("https://api.prodigiedu.com/api/organisations/");
       const result = await res.json();
       setOrganiser(result.data);
     } catch (error) {
@@ -77,7 +77,7 @@ const Organiser = () => {
       myHeaders.append("Content-Type", "application/json");
       myHeaders.append("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGMwMGIwYmNjOGU0YmMxNmYwYTM4ZDAiLCJlbWFpbCI6InVzZXIxQGdtYWlsLmNvbSIsIm5hbWUiOiJDIEphY2hpdHJhIiwiaWF0IjoxNzU3NDE2NDAzLCJleHAiOjE3NTgwMjEyMDN9.kKXf3kMBDQ_emsekhsGSKpE5VhnZ4FKwk0Ep39uphxY");
 
-      const res = await fetch("http://localhost:3001/api/organisations/admin/create", {
+      const res = await fetch("https://api.prodigiedu.com/api/organisations/admin/create", {
         method: "POST",
         headers: myHeaders,
         body: JSON.stringify(formData),

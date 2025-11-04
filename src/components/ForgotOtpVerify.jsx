@@ -43,7 +43,7 @@ const ForgotOtpVerify = () => {
         redirect: "follow"
       };
 
-      fetch("http://localhost:3001/api/admin/verify-otp", requestOptions)
+      fetch("https://api.prodigiedu.com/api/admin/verify-otp", requestOptions)
         .then((response) => response.text())
         .then((result) => {
           console.log(result)

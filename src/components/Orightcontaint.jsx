@@ -24,7 +24,7 @@ import { Country, State, City } from "country-state-city";
 const { Option } = Select;
 const { Title, Text } = Typography;
 
-const Orightcontaint = ({ fun, ID }) => {
+const Orightcontaint = ({ fun, ID, organizerData }) => {
   const { id } = useParams();
   const [showImage, setShowImage] = useState("");
   const [fileName, setFileName] = useState("");
@@ -36,6 +36,9 @@ const Orightcontaint = ({ fun, ID }) => {
   
   // Use ID from props if available, otherwise use id from params
   const competitionId = ID || id;
+  
+  // Get organizer ID - use organizerData if available (from modal), otherwise use userId (from params/direct route)
+  const organizerId = organizerData?._id || userId;
 
   const [competitionData, setCompetitionData] = useState({
     name: "",
@@ -470,7 +473,7 @@ const Orightcontaint = ({ fun, ID }) => {
     
     try {
       const response = await fetch(
-        `http://localhost:3001/api/competitions/getoverview/${competitionId}`,
+        `https://api.prodigiedu.com/api/competitions/getoverview/${competitionId}`,
         {
           method: "GET",
           redirect: "follow",
@@ -525,7 +528,7 @@ const Orightcontaint = ({ fun, ID }) => {
         if (fetchedData.image) {
           const imageUrl = fetchedData.image.startsWith("http")
             ? fetchedData.image
-            : `http://localhost:3001${fetchedData.image}`;
+            : `https://api.prodigiedu.com${fetchedData.image}`;
           setShowImage(imageUrl);
           setFileName(fetchedData.image.split("/").pop() || "Uploaded Image");
           setFileSize(fetchedData.imageSize || 0);
@@ -571,7 +574,7 @@ const Orightcontaint = ({ fun, ID }) => {
   const handleSave = useCallback(async () => {
     try {
       const formdata = new FormData();
-      formdata.append("organizerId", userId);
+      formdata.append("organizerId", organizerId);
       formdata.append("name", competitionData.name);
       formdata.append("description", competitionData.description);
       
@@ -591,8 +594,8 @@ const Orightcontaint = ({ fun, ID }) => {
       formdata.append("stages", JSON.stringify(competitionData.stages));
 
       const url = competitionId
-        ? `http://localhost:3001/api/competitions/updateoverview/${competitionId}`
-        : `http://localhost:3001/api/competitions/overview`;
+        ? `https://api.prodigiedu.com/api/competitions/updateoverview/${competitionId}`
+        : `https://api.prodigiedu.com/api/competitions/overview`;
 
       const method = competitionId ? "PUT" : "POST";
 
@@ -619,7 +622,7 @@ const Orightcontaint = ({ fun, ID }) => {
     } catch (error) {
       console.error(`${competitionId ? "Update" : "Save"} error:`, error);
     }
-  }, [competitionData, userId, competitionId, fun]);
+  }, [competitionData, userId, organizerId, competitionId, fun]);
 
   const [deleteModal, setDeleteModal] = useState({ open: false, stageId: null });
 

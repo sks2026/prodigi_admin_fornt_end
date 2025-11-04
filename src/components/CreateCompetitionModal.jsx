@@ -123,12 +123,12 @@ const CreateCompetitionModal = ({ isOpen, onClose, organizerData }) => {
                                     scrollBehavior: 'smooth',
                                     position: 'relative'
                                 }}>
-                                    {page === 0 && <Orightcontaint fun={sidebarData} ID={ID} />}
-                                    {page === 1 && <OSyllabus fun={sidebarData} ID={ID} />}
-                                    {page === 2 && <Opattern fun={sidebarData} ID={ID} />}
-                                    {page === 3 && <Oeligibility fun={sidebarData} ID={ID} />}
-                                    {page === 4 && <Oregistration fun={sidebarData} ID={ID} />}
-                                    {page === 5 && <Oawards fun={sidebarData} ID={ID} />}
+                                    {page === 0 && <Orightcontaint fun={sidebarData} ID={ID} organizerData={organizerData} />}
+                                    {page === 1 && <OSyllabus fun={sidebarData} ID={ID} organizerData={organizerData} />}
+                                    {page === 2 && <Opattern fun={sidebarData} ID={ID} organizerData={organizerData} />}
+                                    {page === 3 && <Oeligibility fun={sidebarData} ID={ID} organizerData={organizerData} />}
+                                    {page === 4 && <Oregistration fun={sidebarData} ID={ID} organizerData={organizerData} />}
+                                    {page === 5 && <Oawards fun={sidebarData} ID={ID} organizerData={organizerData} />}
                                 </div>
                             </div>
                         </div>

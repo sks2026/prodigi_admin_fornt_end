@@ -582,9 +582,23 @@ Oawards = ({ fun, ID }) => {
             <Button
               type=""
               size="large"
-              disabled={!allStagesHaveAwards || loading}
               loading={loading}
-              onClick={() => setIsModalVisible(true)}
+              onClick={() => {
+                if (!allStagesHaveAwards) {
+                  const stagesWithoutAwards = stages.filter(stage => {
+                    const stageAwardTypes = awardTypesByTab[stage.id.toString()] || [];
+                    return stageAwardTypes.length === 0 || !stageAwardTypes.every(type => 
+                      type.rows.length > 0 && type.rows.every(row => row.quantity && row.givenTo)
+                    );
+                  });
+                  const stageNames = stagesWithoutAwards.map(stage => stage.name).join(', ');
+                  message.warning(
+                    `Please add at least 1 complete award type to the following stage(s): ${stageNames}`
+                  );
+                  return;
+                }
+                setIsModalVisible(true);
+              }}
               style={{
                 backgroundColor: !allStagesHaveAwards ? "#dadada" : "#4CAF50",
                 color: "#ffffff",
@@ -594,6 +608,7 @@ Oawards = ({ fun, ID }) => {
                 fontSize: "16px",
                 fontWeight: "500",
                 borderRadius: "6px",
+                cursor: "pointer",
               }}
             >
               Publish
@@ -625,6 +640,8 @@ Oawards = ({ fun, ID }) => {
           </Button>,
         ]}
         centered
+        zIndex={9999}
+        style={{ zIndex: 9999 }}
       >
         <div style={{ textAlign: "center" }}>
           <div style={{ fontSize: 22, fontWeight: 600, marginBottom: 16 }}>

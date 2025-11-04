@@ -45,7 +45,7 @@ const CustomerOverview = ({ customer, onNavigate }) => {
         redirect: "follow"
       };
 
-      const apiUrl = `http://localhost:3001/api/customer-requests/my-requests/${customerId}`;
+      const apiUrl = `https://api.prodigiedu.com/api/customer-requests/my-requests/${customerId}`;
       console.log('Fetching from URL:', apiUrl);
 
       const response = await fetch(apiUrl, requestOptions);
@@ -113,7 +113,7 @@ const CustomerOverview = ({ customer, onNavigate }) => {
     }
 
     try {
-      const apiUrl = `http://localhost:3001/api/customer-requests/${referenceId}/toggle-status/${customerId}`;
+      const apiUrl = `https://api.prodigiedu.com/api/customer-requests/${referenceId}/toggle-status/${customerId}`;
       console.log('API URL:', apiUrl);
       
       const requestOptions = {

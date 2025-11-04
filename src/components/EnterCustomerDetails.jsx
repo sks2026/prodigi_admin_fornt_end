@@ -34,7 +34,7 @@ const EnterCustomerDetails = ({ onNavigate }) => {
 
     try {
       // Call the API with JSON data
-      const response = await fetch('http://localhost:3001/api/users/verify-user', {
+      const response = await fetch('https://api.prodigiedu.com/api/users/verify-user', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

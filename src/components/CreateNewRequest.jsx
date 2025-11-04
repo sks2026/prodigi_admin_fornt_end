@@ -9,6 +9,14 @@ const REQUEST_TYPES = [
   { value: 'organiser update detail', label: 'Organiser Update Detail' }
 ];
 
+const ORGANISER_REQUEST_TYPES = [
+  { value: '', label: 'Select' },
+  { value: 'modify mobile number', label: 'Modify Mobile Number' },
+  { value: 'reset password', label: 'Reset Password' },
+  { value: 'organiser update detail', label: 'Organiser Update Detail' },
+  { value: 'bank account', label: 'Bank Account' }
+];
+
 const PRIORITY_LEVELS = [
   { value: 'low', label: 'Low' },
   { value: 'medium', label: 'Medium' },
@@ -30,7 +38,10 @@ const CreateNewRequest = ({ onNavigate, customerData }) => {
     oldOrganiserEmail: '',
     newOrganiserEmail: '',
     oldOrganiserMobile: '',
-    newOrganiserMobile: ''
+    newOrganiserMobile: '',
+    // Bank account fields
+    accountNumber: '',
+    razorpay_id: ''
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -83,6 +94,19 @@ const CreateNewRequest = ({ onNavigate, customerData }) => {
       }
     }
 
+    // Validate bank account details if request type is bank account
+    if (formData.request === 'bank account') {
+      if (!formData.accountNumber.trim() || !formData.razorpay_id.trim()) {
+        alert('Please provide both Account Number and Razorpay ID for bank account setup');
+        return;
+      }
+      // Validate account number (basic validation)
+      if (formData.accountNumber.length < 9 || formData.accountNumber.length > 18) {
+        alert('Please enter a valid account number (9-18 digits)');
+        return;
+      }
+    }
+
     // Validate organiser details if request type is organiser update detail
     if (formData.request === 'organiser update detail') {
       // Check if at least one field is being updated
@@ -126,10 +150,70 @@ const CreateNewRequest = ({ onNavigate, customerData }) => {
       return;
     }
 
-    // Note: All request types now go through the API call
+    // Handle bank account request separately
+    if (formData.request === 'bank account') {
+      try {
+        setIsLoading(true);
+        
+        const myHeaders = new Headers();
+        myHeaders.append("Content-Type", "application/json");
+
+        const raw = JSON.stringify({
+          "razorpay_id": formData.razorpay_id,
+          "organisationId": customerId,
+          "accountNumber": formData.accountNumber
+        });
+
+        const requestOptions = {
+          method: "POST",
+          headers: myHeaders,
+          body: raw,
+          redirect: "follow"
+        };
+
+        const response = await fetch(`https://api.prodigiedu.com/api/payment-gateway/bank-transhe-pay`, requestOptions);
+        const result = await response.json();
+        
+        if (response.ok && result.status) {
+          // Reset form
+          setFormData({
+            request: '',
+            description: '',
+            priority: 'medium',
+            oldMobile: '',
+            newMobile: '',
+            oldPassword: '',
+            newPassword: '',
+            oldOrganiserName: '',
+            newOrganiserName: '',
+            oldOrganiserEmail: '',
+            newOrganiserEmail: '',
+            oldOrganiserMobile: '',
+            newOrganiserMobile: '',
+            accountNumber: '',
+            razorpay_id: ''
+          });
+          alert('Bank account details added successfully!');
+          // Navigate back or refresh
+          if (onNavigate) {
+            onNavigate('overview');
+          }
+        } else {
+          alert(result.message || 'Failed to add bank account. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error adding bank account:', error);
+        alert('Error adding bank account. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
+    // Note: All other request types go through the API call
     // The mobile number fields are conditionally shown for modify mobile number requests
 
-    // Make API call for all request types
+    // Make API call for all other request types
     try {
       setIsLoading(true);
       
@@ -159,7 +243,7 @@ const CreateNewRequest = ({ onNavigate, customerData }) => {
         redirect: "follow"
       };
 
-      const response = await fetch(`http://localhost:3001/api/customer-requests/create/${customerId}`, requestOptions);
+      const response = await fetch(`https://api.prodigiedu.com/api/customer-requests/create/${customerId}`, requestOptions);
       const result = await response.json();
       
       if (response.ok && result.success) {
@@ -177,7 +261,9 @@ const CreateNewRequest = ({ onNavigate, customerData }) => {
           oldOrganiserEmail: '',
           newOrganiserEmail: '',
           oldOrganiserMobile: '',
-          newOrganiserMobile: ''
+          newOrganiserMobile: '',
+          accountNumber: '',
+          razorpay_id: ''
         });
         // Navigate to request generated page with reference ID and customer data
         if (onNavigate) {
@@ -216,7 +302,7 @@ const CreateNewRequest = ({ onNavigate, customerData }) => {
             onChange={handleInputChange}
             required
           >
-            {REQUEST_TYPES.map((t) => (
+            {(customerData?.organiserName || customerData?.organiserEmail || customerData?.role === 'organiser' ? ORGANISER_REQUEST_TYPES : REQUEST_TYPES).map((t) => (
               <option key={t.value} value={t.value}>{t.label}</option>
             ))}
           </select>
@@ -302,6 +388,43 @@ const CreateNewRequest = ({ onNavigate, customerData }) => {
                 onChange={handleInputChange}
                 placeholder="Enter new password (minimum 6 characters)"
                 minLength="6"
+                required
+              />
+            </label>
+          </>
+        )}
+
+        {/* Bank account fields - only show for bank account request */}
+        {formData.request === 'bank account' && (
+          <>
+            <div style={{ marginBottom: '20px', padding: '10px', background: '#e6f7ff', borderRadius: '5px', border: '1px solid #1890ff' }}>
+              <p style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#0050b3' }}>
+                <strong>Note:</strong> Add bank account details to enable payment gateway for this organiser.
+              </p>
+            </div>
+
+            <label>
+              <span>Account Number *</span>
+              <input
+                type="text"
+                name="accountNumber"
+                value={formData.accountNumber}
+                onChange={handleInputChange}
+                placeholder="Enter bank account number"
+                minLength="9"
+                maxLength="18"
+                required
+              />
+            </label>
+
+            <label>
+              <span>Razorpay ID *</span>
+              <input
+                type="text"
+                name="razorpay_id"
+                value={formData.razorpay_id}
+                onChange={handleInputChange}
+                placeholder="Enter Razorpay account ID"
                 required
               />
             </label>
