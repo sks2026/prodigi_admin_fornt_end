@@ -8,7 +8,7 @@ import Oregistration from './Oregistration'
 import Oawards from './Oawards'
 import './OverviewZero.css'
 
-const CreateCompetitionModal = ({ isOpen, onClose, organizerData }) => {
+const CreateCompetitionModal = ({ isOpen, onClose, organizerData, editCompetitionId = null }) => {
     const [page, setPage] = useState(0)
     const [ID, setID] = useState("")
 
@@ -17,6 +17,14 @@ const CreateCompetitionModal = ({ isOpen, onClose, organizerData }) => {
         setID(competitionId)
         console.log("Page changed to:", i, "Competition ID:", competitionId)
     }
+
+    // Initialize with edit competition ID if provided
+    useEffect(() => {
+        if (isOpen && editCompetitionId) {
+            setID(editCompetitionId)
+            setPage(0)
+        }
+    }, [isOpen, editCompetitionId])
 
     // Reset state when modal closes
     useEffect(() => {
@@ -61,7 +69,7 @@ const CreateCompetitionModal = ({ isOpen, onClose, organizerData }) => {
                     backgroundColor: '#fff'
                 }}>
                     <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '600' }}>
-                        Create New Competition
+                        {editCompetitionId ? 'Edit Competition' : 'Create New Competition'}
                     </h2>
                     <button
                         onClick={onClose}

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import CompetitionDetailsModal from './CompetitionDetailsModal'
 import CreateCompetitionModal from './CreateCompetitionModal'
+import AddBankAccountModal from './AddBankAccountModal'
 
 const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) => {
     const [activeTab, setActiveTab] = useState('requests') // 'requests' or 'competitions'
@@ -14,6 +15,8 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
     const [selectedCompetitionId, setSelectedCompetitionId] = useState(null)
     const [showModal, setShowModal] = useState(false)
     const [showCreateCompModal, setShowCreateCompModal] = useState(false)
+    const [showBankAccountModal, setShowBankAccountModal] = useState(false)
+    const [editCompetitionId, setEditCompetitionId] = useState(null)
 
     const handleViewCompetition = (competitionId) => {
         setSelectedCompetitionId(competitionId)
@@ -23,6 +26,36 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
     const handleCloseModal = () => {
         setShowModal(false)
         setSelectedCompetitionId(null)
+    }
+
+    const handleEditCompetition = (competitionId) => {
+        setEditCompetitionId(competitionId)
+        setShowCreateCompModal(true)
+    }
+
+    const handleCloseCreateCompModal = async () => {
+        setShowCreateCompModal(false)
+        setEditCompetitionId(null)
+        
+        // Refresh competitions list if we were editing
+        if (editCompetitionId && organizerData?._id) {
+            try {
+                const response = await fetch(
+                    `https://api.prodigiedu.com/api/competitions/getAllByOrganizerId?organizerId=${organizerData._id}`
+                )
+                const data = await response.json()
+                if (response.ok && data.status) {
+                    setCompetitions(data.data.competitions || [])
+                    setStats({
+                        total: data.data.total || 0,
+                        complete: data.data.complete || 0,
+                        incomplete: data.data.incomplete || 0
+                    })
+                }
+            } catch (err) {
+                console.error('Error refreshing competitions:', err)
+            }
+        }
     }
 
     const handleToggleStatus = async (competitionId, currentStatus) => {
@@ -65,6 +98,50 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
         } catch (err) {
             console.error('Error toggling competition status:', err)
             alert('Failed to update competition status. Please try again.')
+        }
+    }
+
+    const handleDuplicateCompetition = async (competitionId) => {
+        if (!window.confirm('Are you sure you want to duplicate this competition? The duplicate will be created with closed status.')) {
+            return
+        }
+
+        try {
+            const response = await fetch(
+                `https://api.prodigiedu.com/api/competitions/duplicate/${competitionId}`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                }
+            )
+
+            const data = await response.json()
+
+            if (response.ok && data.success) {
+                alert('Competition duplicated successfully!')
+                // Refresh the competitions list
+                if (organizerData?._id) {
+                    const refreshResponse = await fetch(
+                        `https://api.prodigiedu.com/api/competitions/getAllByOrganizerId?organizerId=${organizerData._id}`
+                    )
+                    const refreshData = await refreshResponse.json()
+                    if (refreshResponse.ok && refreshData.status) {
+                        setCompetitions(refreshData.data.competitions || [])
+                        setStats({
+                            total: refreshData.data.total || 0,
+                            complete: refreshData.data.complete || 0,
+                            incomplete: refreshData.data.incomplete || 0
+                        })
+                    }
+                }
+            } else {
+                alert(data.message || 'Failed to duplicate competition')
+            }
+        } catch (err) {
+            console.error('Error duplicating competition:', err)
+            alert('Failed to duplicate competition. Please try again.')
         }
     }
 
@@ -168,18 +245,41 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
         <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                 <h2 style={{ margin: 0 }}>Organiser Overview</h2>
-                {organizerData && (
-                    <span style={{
-                        padding: '6px 16px',
-                        borderRadius: 6,
-                        fontSize: '14px',
-                        fontWeight: 'bold',
-                        backgroundColor: organizerData.status ? '#e6f7e6' : '#ffe6e6',
-                        color: organizerData.status ? 'green' : 'red'
-                    }}>
-                        {organizerData.status ? 'Active' : 'Inactive'}
-                    </span>
-                )}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    {organizerData && (
+                        <button
+                            type="button"
+                            onClick={() => setShowBankAccountModal(true)}
+                            style={{
+                                padding: '8px 16px',
+                                backgroundColor: '#16a34a',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: 6,
+                                fontSize: '14px',
+                                fontWeight: '500',
+                                cursor: 'pointer',
+                                transition: 'background-color 0.2s'
+                            }}
+                            onMouseEnter={(e) => e.target.style.backgroundColor = '#15803d'}
+                            onMouseLeave={(e) => e.target.style.backgroundColor = '#16a34a'}
+                        >
+                            + Add Bank Account
+                        </button>
+                    )}
+                    {organizerData && (
+                        <span style={{
+                            padding: '6px 16px',
+                            borderRadius: 6,
+                            fontSize: '14px',
+                            fontWeight: 'bold',
+                            backgroundColor: organizerData.status ? '#e6f7e6' : '#ffe6e6',
+                            color: organizerData.status ? 'green' : 'red'
+                        }}>
+                            {organizerData.status ? 'Active' : 'Inactive'}
+                        </span>
+                    )}
+                </div>
             </div>
 
             {!organizerData ? (
@@ -408,9 +508,8 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
                                 <tr style={{ backgroundColor: '#f9fafb' }}>
                                     <th style={{ padding: '12px 16px', color: '#6b7280', fontWeight: '500', fontSize: '14px' }}>Reference ID</th>
                                     <th style={{ padding: '12px 16px', color: '#6b7280', fontWeight: '500', fontSize: '14px' }}>Customer Name</th>
-                                    <th style={{ padding: '12px 16px', color: '#6b7280', fontWeight: '500', fontSize: '14px' }}>Request</th>
+                                    <th style={{ padding: '12px 16px', color: '#6b7280', fontWeight: '500', fontSize: '14px' }}>Competition Name</th>
                                     <th style={{ padding: '12px 16px', color: '#6b7280', fontWeight: '500', fontSize: '14px' }}>Raised by</th>
-                                    <th style={{ padding: '12px 16px', color: '#6b7280', fontWeight: '500', fontSize: '14px' }}>Status</th>
                                     <th style={{ padding: '12px 16px', color: '#6b7280', fontWeight: '500', fontSize: '14px' }}>Actions</th>
                                 </tr>
                             </thead>
@@ -424,59 +523,84 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
                                             {organizerData?.organiserName || organizerData?.name || 'N/A'}
                                         </td>
                                         <td style={{ padding: '12px 16px', fontSize: '14px' }}>
-                                            Create Competition
+                                            {comp.overview?.name || 'N/A'}
                                         </td>
                                         <td style={{ padding: '12px 16px', fontSize: '14px' }}>
                                             {comp.createdBy || organizerData?.name || 'N/A'}
                                         </td>
                                         <td style={{ padding: '12px 16px' }}>
-                                            <span style={{
-                                                padding: '6px 14px',
-                                                borderRadius: '20px',
-                                                fontSize: '12px',
-                                                fontWeight: '500',
-                                                backgroundColor:
-                                                    comp.status === 'Open' ? '#fef3c7' :
-                                                        comp.status === 'In progress' ? '#fef3c7' :
-                                                            comp.status === 'Closed' ? '#d1fae5' : '#fef3c7',
-                                                color:
-                                                    comp.status === 'Open' ? '#d97706' :
-                                                        comp.status === 'In progress' ? '#d97706' :
-                                                            comp.status === 'Closed' ? '#059669' : '#d97706',
-                                                border: '1px solid',
-                                                borderColor:
-                                                    comp.status === 'Open' ? '#fcd34d' :
-                                                        comp.status === 'In progress' ? '#fcd34d' :
-                                                            comp.status === 'Closed' ? '#6ee7b7' : '#fcd34d'
-                                            }}>
-                                                {comp.status || (comp.iscomplete ? 'Closed' : 'Open')}
-                                            </span>
-                                        </td>
-                                        <td style={{ padding: '12px 16px' }}>
-                                            <button
-                                                type="button"
-                                                onClick={() => handleToggleStatus(comp._id, comp.iscomplete)}
-                                                style={{
-                                                    padding: '6px 12px',
-                                                    fontSize: '12px',
-                                                    fontWeight: '500',
-                                                    border: '1px solid',
-                                                    borderRadius: '4px',
-                                                    cursor: 'pointer',
-                                                    backgroundColor: comp.iscomplete ? '#dcfce7' : '#fee2e2',
-                                                    color: comp.iscomplete ? '#16a34a' : '#dc2626',
-                                                    borderColor: comp.iscomplete ? '#16a34a' : '#dc2626',
-                                                    transition: 'all 0.2s'
-                                                }}
-                                                onMouseEnter={(e) => {
-                                                    e.target.style.backgroundColor = comp.iscomplete ? '#bbf7d0' : '#fecaca'
-                                                }}
-                                                onMouseLeave={(e) => {
-                                                    e.target.style.backgroundColor = comp.iscomplete ? '#dcfce7' : '#fee2e2'
-                                                }}
-                                            >
-                                                {comp.iscomplete ? 'Open' : 'Close'}
-                                            </button>
+                                            <div style={{ display: 'flex', gap: '8px' }}>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleEditCompetition(comp._id)}
+                                                    style={{
+                                                        padding: '6px 12px',
+                                                        fontSize: '12px',
+                                                        fontWeight: '500',
+                                                        border: '1px solid #3b82f6',
+                                                        borderRadius: '4px',
+                                                        cursor: 'pointer',
+                                                        backgroundColor: '#dbeafe',
+                                                        color: '#3b82f6',
+                                                        transition: 'all 0.2s'
+                                                    }}
+                                                    onMouseEnter={(e) => {
+                                                        e.target.style.backgroundColor = '#bfdbfe'
+                                                    }}
+                                                    onMouseLeave={(e) => {
+                                                        e.target.style.backgroundColor = '#dbeafe'
+                                                    }}
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleDuplicateCompetition(comp._id)}
+                                                    style={{
+                                                        padding: '6px 12px',
+                                                        fontSize: '12px',
+                                                        fontWeight: '500',
+                                                        border: '1px solid #f59e0b',
+                                                        borderRadius: '4px',
+                                                        cursor: 'pointer',
+                                                        backgroundColor: '#fef3c7',
+                                                        color: '#f59e0b',
+                                                        transition: 'all 0.2s'
+                                                    }}
+                                                    onMouseEnter={(e) => {
+                                                        e.target.style.backgroundColor = '#fde68a'
+                                                    }}
+                                                    onMouseLeave={(e) => {
+                                                        e.target.style.backgroundColor = '#fef3c7'
+                                                    }}
+                                                >
+                                                    Duplicate
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleToggleStatus(comp._id, comp.iscomplete)}
+                                                    style={{
+                                                        padding: '6px 12px',
+                                                        fontSize: '12px',
+                                                        fontWeight: '500',
+                                                        border: '1px solid',
+                                                        borderRadius: '4px',
+                                                        cursor: 'pointer',
+                                                        backgroundColor: comp.iscomplete ? '#dcfce7' : '#fee2e2',
+                                                        color: comp.iscomplete ? '#16a34a' : '#dc2626',
+                                                        borderColor: comp.iscomplete ? '#16a34a' : '#dc2626',
+                                                        transition: 'all 0.2s'
+                                                    }}
+                                                    onMouseEnter={(e) => {
+                                                        e.target.style.backgroundColor = comp.iscomplete ? '#bbf7d0' : '#fecaca'
+                                                    }}
+                                                    onMouseLeave={(e) => {
+                                                        e.target.style.backgroundColor = comp.iscomplete ? '#dcfce7' : '#fee2e2'
+                                                    }}
+                                                >
+                                                    {comp.iscomplete ? 'Open' : 'Close'}
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -557,9 +681,19 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
             {/* Create Competition Modal */}
             <CreateCompetitionModal
                 isOpen={showCreateCompModal}
-                onClose={() => setShowCreateCompModal(false)}
+                onClose={handleCloseCreateCompModal}
                 organizerData={organizerData}
+                editCompetitionId={editCompetitionId}
             />
+
+            {/* Add Bank Account Modal */}
+            {organizerData && (
+                <AddBankAccountModal
+                    isOpen={showBankAccountModal}
+                    onClose={() => setShowBankAccountModal(false)}
+                    organizerId={organizerData._id}
+                />
+            )}
         </div>
     )
 }

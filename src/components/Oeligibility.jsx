@@ -1343,23 +1343,21 @@ const { Title, Text } = Typography;
                     />
                   </Col>
                   <Col span={8}>
-                                          <Select
-                        placeholder="Select Type"
-                        value={form.type}
-                        onChange={(value) => handleFormTypeChange(form.id, value)}
-                        style={{ width: '100%' }}
-                        showSearch={false}
-                        filterOption={false}
-                        notFoundContent={null}
-                        loading={false}
-                      >
-                        <Option value="Short Answer">Short Answer</Option>
-                        <Option value="Multiple Choice">Multiple Choice</Option>
-                        <Option value="Checkbox">Checkbox</Option>
-                        <Option value="Drop Down">Drop Down</Option>
-                        <Option value="Date">Date</Option>
-                        {/* <Option value="Photo Upload">Photo Upload</Option> */}
-                      </Select>
+                    <Select
+                      placeholder="Select Type"
+                      value={form.type}
+                      onChange={(value) => handleFormTypeChange(form.id, value)}
+                      style={{ width: '100%' }}
+                      getPopupContainer={(trigger) => trigger.parentNode}
+                      dropdownStyle={{ zIndex: 9999 }}
+                    >
+                      <Option value="Short Answer">Short Answer</Option>
+                      <Option value="Multiple Choice">Multiple Choice</Option>
+                      <Option value="Checkbox">Checkbox</Option>
+                      <Option value="Drop Down">Drop Down</Option>
+                      <Option value="Date">Date</Option>
+                      {/* <Option value="Photo Upload">Photo Upload</Option> */}
+                    </Select>
                   </Col>
                   <Col span={4}>
                     <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>

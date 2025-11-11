@@ -30,7 +30,7 @@ const { TextArea } = Input;
 // Student Details options for dropdowns (for future use)
 // Note: This array is currently not used but kept for future functionality
 
-export default function Oregistration({ fun, ID }) {
+export default function Oregistration({ fun, ID, organizerData }) {
   const { id } = useParams();
   const [plans, setPlans] = useState([]); // Remove default plan
   const [form] = Form.useForm();
@@ -66,19 +66,26 @@ export default function Oregistration({ fun, ID }) {
   // Fetch bank accounts by organizer ID
   const fetchBankAccounts = async () => {
     try {
-      const userDataString = localStorage.getItem('user_Data');
+      // Use organizerData from props if available, otherwise fallback to localStorage
+      let organizerId;
       
-      if (!userDataString) {
-        message.warning('Please login first to load bank accounts');
-        setBankAccounts([]);
-        return;
+      if (organizerData?._id) {
+        organizerId = organizerData._id;
+      } else {
+        const userDataString = localStorage.getItem('user_Data');
+        
+        if (!userDataString) {
+          message.warning('Please login first to load bank accounts');
+          setBankAccounts([]);
+          return;
+        }
+        
+        const userData = JSON.parse(userDataString);
+        organizerId = userData?._id;
       }
-      
-      const userData = JSON.parse(userDataString);
-      const organizerId = userData?._id;
 
       if (!organizerId) {
-        message.warning('User ID not found. Please login again.');
+        message.warning('Organization ID not found.');
         setBankAccounts([]);
         return;
       }
@@ -102,14 +109,8 @@ export default function Oregistration({ fun, ID }) {
       if (response.ok) {
         const result = await response.json();
         
-        if (result.success && result.data) {
-          let accountsArray = result.data;
-          
-          if (!Array.isArray(result.data)) {
-            accountsArray = [result.data];
-          }
-          
-          const formattedAccounts = accountsArray.map((account) => ({
+        if (result.success && result.data && Array.isArray(result.data)) {
+          const formattedAccounts = result.data.map((account) => ({
             value: account._id,
             label: `Account - ${account.accountNumber}`,
             accountNumber: account.accountNumber,
@@ -122,13 +123,17 @@ export default function Oregistration({ fun, ID }) {
           
           if (formattedAccounts.length > 0) {
             message.success(`${formattedAccounts.length} bank account(s) loaded`);
+          } else {
+            message.info('No bank accounts found');
           }
         } else {
           setBankAccounts([]);
+          message.info('No bank accounts available');
         }
        
       } else {
-        message.error('Failed to load bank accounts');
+        const errorResult = await response.json();
+        message.error(errorResult.message || 'Failed to load bank accounts');
         setBankAccounts([]);
       }
     } catch (error) {
@@ -719,29 +724,41 @@ export default function Oregistration({ fun, ID }) {
             label={<span>Bank Account<span style={{ color: '#ff4d4f' }}>*</span></span>}
             style={{ maxWidth: 400 }}
           >
-            <Select
-              size="large"
-              value={registrationData.bankAccount}
-              onChange={(value) => updateRegistrationData('bankAccount', value)}
-              placeholder="Select bank account"
-              onDropdownOpenChange={(open) => {
-                if (open && bankAccounts.length === 0) {
-                  fetchBankAccounts();
-                }
-              }}
-            >
-              {bankAccounts.map(account => (
-                <Select.Option key={account.value} value={account.value}>
-                  <Space>
-                    <BankOutlined style={{ color: '#1890ff' }} />
-                    <span>{account.label}</span>
-                    <Text type="secondary" style={{ fontSize: 12 }}>
-                      {account.accountNumber ? `- ${account.accountNumber.slice(-4)}` : ''}
-                    </Text>
-                  </Space>
-                </Select.Option>
-              ))}
-            </Select>
+            <Space.Compact style={{ width: '100%' }}>
+              <Select
+                size="large"
+                value={registrationData.bankAccount}
+                onChange={(value) => updateRegistrationData('bankAccount', value)}
+                placeholder="Select bank account"
+                getPopupContainer={(trigger) => trigger.parentElement}
+                style={{ width: 'calc(100% - 40px)' }}
+                onDropdownOpenChange={(open) => {
+                  if (open && bankAccounts.length === 0) {
+                    fetchBankAccounts();
+                  }
+                }}
+              >
+                {bankAccounts.map(account => (
+                  <Select.Option key={account.value} value={account.value}>
+                    <Space direction="vertical" size={0} style={{ width: '100%' }}>
+                      <Space>
+                        <BankOutlined style={{ color: '#1890ff' }} />
+                        <span style={{ fontWeight: 500 }}>{account.accountNumber}</span>
+                      </Space>
+                      <Text type="secondary" style={{ fontSize: 12, paddingLeft: 24 }}>
+                        {account.ifsc} • {account.accountType}
+                      </Text>
+                    </Space>
+                  </Select.Option>
+                ))}
+              </Select>
+              <Button 
+                size="large"
+                icon={<ReloadOutlined />}
+                onClick={fetchBankAccounts}
+                title="Refresh bank accounts"
+              />
+            </Space.Compact>
           </Form.Item>
 
           <Divider style={{ margin: '32px 0', borderColor: '#f0f0f0' }} />
