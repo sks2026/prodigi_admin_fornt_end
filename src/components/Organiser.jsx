@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { FiPlus, FiX, FiUser, FiMail, FiPhone, FiMapPin } from "react-icons/fi";
 import "./Organiser.css";
+import StudentManagement from "./StudentManagement";
 
 const Organiser = () => {
+  const [activeTab, setActiveTab] = useState('organisers');
   const [organiser, setOrganiser] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -156,16 +158,60 @@ const Organiser = () => {
     <div className="organiser-page">
       {/* Header */}
       <div className="organiser-header">
-        <h1 className="organiser-title">Organisers Management</h1>
+        <h1 className="organiser-title">Management</h1>
         <button 
           className="add-organiser-btn"
           onClick={() => setIsModalOpen(true)}
         >
           <FiPlus />
-          Add Organiser
+          {activeTab === 'organisers' ? 'Add Organiser' : 'Add Student'}
         </button>
       </div>
 
+      {/* Tab Navigation */}
+      <div style={{ 
+        display: 'flex', 
+        gap: '16px', 
+        marginBottom: '24px',
+        borderBottom: '2px solid #e2e8f0'
+      }}>
+        <button
+          onClick={() => setActiveTab('organisers')}
+          style={{
+            padding: '12px 24px',
+            background: 'none',
+            border: 'none',
+            borderBottom: activeTab === 'organisers' ? '3px solid #667eea' : '3px solid transparent',
+            color: activeTab === 'organisers' ? '#667eea' : '#64748b',
+            fontWeight: activeTab === 'organisers' ? '600' : '500',
+            fontSize: '1rem',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease'
+          }}
+        >
+          Organisers
+        </button>
+        <button
+          onClick={() => setActiveTab('students')}
+          style={{
+            padding: '12px 24px',
+            background: 'none',
+            border: 'none',
+            borderBottom: activeTab === 'students' ? '3px solid #667eea' : '3px solid transparent',
+            color: activeTab === 'students' ? '#667eea' : '#64748b',
+            fontWeight: activeTab === 'students' ? '600' : '500',
+            fontSize: '1rem',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease'
+          }}
+        >
+          Students
+        </button>
+      </div>
+
+      {/* Tab Content */}
+      {activeTab === 'organisers' ? (
+        <>
       {/* Stats Cards */}
       <div className="organiser-stats">
         <div className="stat-card">
@@ -550,6 +596,10 @@ const Organiser = () => {
             </form>
           </div>
         </div>
+      )}
+        </>
+      ) : (
+        <StudentManagement isModalOpen={isModalOpen} setIsModalOpen={setIsModalOpen} />
       )}
     </div>
   );

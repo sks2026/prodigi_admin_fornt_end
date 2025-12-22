@@ -297,7 +297,8 @@ export default function Oregistration({ fun, ID, organizerData }) {
   };
 
   const handleSubmit = async () => {
-  
+    console.log('🔵 Save and Continue button clicked');
+    console.log('📊 Current registration data:', registrationData);
     
     try {
       // Validate required fields
@@ -357,6 +358,7 @@ export default function Oregistration({ fun, ID, organizerData }) {
         }
       }
 
+      console.log('✅ All validations passed');
       setLoading(true);
 
       // Prepare API data structure
@@ -381,7 +383,7 @@ export default function Oregistration({ fun, ID, organizerData }) {
         })) : []
       };
       
-      console.log('Sending API Data:', apiData);
+      console.log('📤 Sending API Data:', apiData);
       const raw = JSON.stringify(apiData);
 
       // Note: Backend handles both create and update with the same POST endpoint
@@ -393,7 +395,10 @@ export default function Oregistration({ fun, ID, organizerData }) {
         redirect: "follow"
       }; 
       
+      console.log('🌐 Making API call to:', `https://api.prodigiedu.com/api/competitions/registration/${competitionId}`);
       const response = await fetch(`https://api.prodigiedu.com/api/competitions/registration/${competitionId}`, requestOptions);
+      
+      console.log('📥 API Response status:', response.status);
       
       if (response.ok) {
         let result;
@@ -403,15 +408,18 @@ export default function Oregistration({ fun, ID, organizerData }) {
           result = await response.text();
         }
         
-        console.log('Registration API Response:', result);
+        console.log('✅ Registration API Response:', result);
         message.success('Registration data saved successfully!');
 
         // Wait a moment for the message to be visible
         setTimeout(() => {
+          console.log('🚀 Calling parent function with competitionId:', competitionId);
           // Call parent function if provided
           if (fun) {
+            console.log('✅ fun function exists, calling fun(5, competitionId)');
             fun(5, competitionId);
           } else {
+            console.log('⚠️ fun function not provided, navigating manually');
             // If no parent function, navigate manually to next step
             try {
               navigate(`/competition/${competitionId}/overview`);
@@ -422,7 +430,7 @@ export default function Oregistration({ fun, ID, organizerData }) {
         }, 1000);
       } else {
         const errorText = await response.text();
-        console.error('Registration API Error:', {
+        console.error('❌ Registration API Error:', {
           status: response.status,
           statusText: response.statusText,
           response: errorText
@@ -431,7 +439,7 @@ export default function Oregistration({ fun, ID, organizerData }) {
       }
 
     } catch (error) {
-      console.error('Registration Error Details:', error);
+      console.error('❌ Registration Error Details:', error);
       message.error(`Failed to save registration data: ${error.message}`);
     } finally {
       setLoading(false);
@@ -512,7 +520,9 @@ export default function Oregistration({ fun, ID, organizerData }) {
           margin-bottom: 24px;
           background: #ffffff;
           transition: all 0.3s ease;
-          width: 60vw;
+          width: 100%;
+          max-width: 100%;
+          box-sizing: border-box;
         }
         
         .plan-card:hover {
@@ -546,7 +556,9 @@ export default function Oregistration({ fun, ID, organizerData }) {
           padding-bottom: 40px;
           border-top: 1px solid #f0f0f0;
           width: 100%;
+          max-width: 100%;
           clear: both;
+          box-sizing: border-box;
         }
         
         .add-plan-button {
@@ -563,11 +575,13 @@ export default function Oregistration({ fun, ID, organizerData }) {
         .save-button-container button {
           display: inline-block !important;
           visibility: visible !important;
+          max-width: 100%;
         }
         
         @media (max-width: 768px) {
           .plan-card {
             padding: 16px;
+            width: 100%;
           }
           
           .registration-form .ant-form-item {
@@ -576,6 +590,14 @@ export default function Oregistration({ fun, ID, organizerData }) {
           
           .save-button-container {
             padding-bottom: 20px;
+            text-align: center;
+            padding-left: 16px;
+            padding-right: 16px;
+          }
+          
+          .save-button-container button {
+            width: 100%;
+            max-width: 300px;
           }
           
           .registration-form .ant-space {
@@ -590,7 +612,7 @@ export default function Oregistration({ fun, ID, organizerData }) {
       `}</style>
       
       <div style={{ minHeight: '100vh', backgroundColor: '#fff', padding: '24px', overflow: 'auto' }}>
-        <div style={{ maxWidth: '900px', margin: '0 auto', paddingBottom: '60px' }}>
+        <div style={{ maxWidth: '900px', margin: '0 auto', paddingBottom: '120px' }}>
           <Title level={2} style={{ marginBottom: 32, fontWeight: 600, color: '#262626' }}>Registration</Title>
 
           <Form 
@@ -722,7 +744,7 @@ export default function Oregistration({ fun, ID, organizerData }) {
 
           <Form.Item
             label={<span>Bank Account<span style={{ color: '#ff4d4f' }}>*</span></span>}
-            style={{ maxWidth: 400 }}
+            style={{ width: '100%', maxWidth: 400 }}
           >
             <Space.Compact style={{ width: '100%' }}>
               <Select
@@ -737,18 +759,30 @@ export default function Oregistration({ fun, ID, organizerData }) {
                     fetchBankAccounts();
                   }
                 }}
+                optionLabelProp="label"
               >
                 {bankAccounts.map(account => (
-                  <Select.Option key={account.value} value={account.value}>
-                    <Space direction="vertical" size={0} style={{ width: '100%' }}>
-                      <Space>
+                  <Select.Option 
+                    key={account.value} 
+                    value={account.value}
+                    label={
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <BankOutlined style={{ color: '#1890ff' }} />
-                        <span style={{ fontWeight: 500 }}>{account.accountNumber}</span>
-                      </Space>
-                      <Text type="secondary" style={{ fontSize: 12, paddingLeft: 24 }}>
+                        {account.accountNumber}
+                      </span>
+                    }
+                  >
+                    <div style={{ padding: '4px 0' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                        <BankOutlined style={{ color: '#1890ff', flexShrink: 0 }} />
+                        <span style={{ fontWeight: 500 }}>
+                          {account.accountNumber}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: 12, color: 'rgba(0, 0, 0, 0.45)', paddingLeft: 24 }}>
                         {account.ifsc} • {account.accountType}
-                      </Text>
-                    </Space>
+                      </div>
+                    </div>
                   </Select.Option>
                 ))}
               </Select>
@@ -861,15 +895,22 @@ export default function Oregistration({ fun, ID, organizerData }) {
               Add a Plan
             </Button>
           </div>
+        </Form>
 
           {/* Save Button */}
           <div className="save-button-container">
             <Button
-              type="primary"
+              type="button"
+              htmlType="button"
               size="large"
               loading={loading}
               disabled={!registrationData.totalRegistrationFee || !registrationData.registrationStartDate || !registrationData.registrationEndDate || !registrationData.bankAccount}
-              onClick={handleSubmit}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('🔘 Button clicked - triggering handleSubmit');
+                handleSubmit();
+              }}
               style={{ 
                 backgroundColor: '#52c41a', 
                 borderColor: '#52c41a', 
@@ -877,13 +918,13 @@ export default function Oregistration({ fun, ID, organizerData }) {
                 height: 48,
                 fontSize: 16,
                 fontWeight: 500,
-                boxShadow: '0 2px 8px rgba(82, 196, 26, 0.3)'
+                boxShadow: '0 2px 8px rgba(82, 196, 26, 0.3)',
+                cursor: loading ? 'wait' : 'pointer'
               }}
             >
-              Save and Continue
+              {loading ? 'Saving...' : 'Save and Continue'}
             </Button>
           </div>
-        </Form>
       </div>
     </div>
     </>

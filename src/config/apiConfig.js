@@ -1,4 +1,6 @@
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.prodigiedu.com';
+// Use localhost for development, production URL for build
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 
+  (import.meta.env.DEV ? 'http://localhost:3001' : 'https://api.prodigiedu.com');
 
 export const API_ENDPOINTS = {
   SEND_OTP: '/api/otp/send',

@@ -65,7 +65,7 @@ const AdminDashboard = () => {
         { icon: <LuPen className='icon' />, label: 'User Management' },
         { icon: <LuDatabase className='icon' />, label: 'Data Management' },
         { icon: <GoPerson className='icon' />, label: 'Organiser' },
-        {icon : <GoPerson className='icon' /> , label:'Compitions'}
+        { icon: <GoPerson className='icon' />, label: 'Compitions' }
 
     ]
 
@@ -213,13 +213,11 @@ const AdminDashboard = () => {
                         <DataManagementPage />
                     ) : activeTab === 'Organiser' ? (
                         <Organiser />
+                    ) : activeTab === 'Compitions' ? (
+                        <Compitions />
+                    ) : (
+                        <DashboardPage getMsg={getMsg} />
                     )
-                        : activeTab === 'Compitions' ? (
-                            <Compitions />
-
-                        ) : (
-                            <DashboardPage getMsg={getMsg} />
-                        )
                 )}
 
                 <Routes>
