@@ -236,11 +236,26 @@ Oawards = ({ fun, ID }) => {
                     Quantity<span style={{ color: "red" }}>*</span>
                   </label>
                   <Input
+                    type="number"
+                    min={0}
                     placeholder="Enter quantity per student"
                     value={row.quantity}
-                    onChange={(e) =>
-                      updateRow(type.id, row.id, "quantity", e.target.value)
-                    }
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      // Only allow numeric values
+                      if (value === '' || /^\d+$/.test(value)) {
+                        updateRow(type.id, row.id, "quantity", value);
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      // Prevent non-numeric key input (except backspace, delete, arrow keys, tab)
+                      if (
+                        !/^\d$/.test(e.key) &&
+                        !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key)
+                      ) {
+                        e.preventDefault();
+                      }
+                    }}
                   />
                 </div>
               </Col>

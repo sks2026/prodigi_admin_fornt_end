@@ -405,6 +405,10 @@
         align-items: flex-start;
     }
     
+    .organiser-title {
+        font-size: 1.5rem;
+    }
+    
     .add-organiser-btn {
         width: 100%;
         justify-content: center;
@@ -412,22 +416,39 @@
     
     .organiser-stats {
         grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .organiser-table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .organiser-table {
+        min-width: 800px;
     }
     
     .organiser-table th,
     .organiser-table td {
         padding: 12px 16px;
+        font-size: 0.8rem;
+    }
+    
+    .modal-overlay {
+        padding: 10px;
     }
     
     .modal-content {
         width: 100%;
-        max-width: 600px;
+        max-width: 100%;
         margin: 0;
         padding: 20px;
+        max-height: 95vh;
     }
     
     .modal-actions {
-        flex-direction: column;
+        flex-direction: column-reverse;
+        gap: 12px;
     }
     
     .modal-actions button {
@@ -440,8 +461,29 @@
         padding: 0 12px;
     }
     
+    .organiser-title {
+        font-size: 1.25rem;
+    }
+    
+    .organiser-title::before {
+        font-size: 1.25rem;
+    }
+    
+    .organiser-stats {
+        gap: 12px;
+    }
+    
+    .stat-card {
+        padding: 16px;
+    }
+    
+    .stat-card h3 {
+        font-size: 1.75rem;
+    }
+    
     .organiser-table {
         font-size: 0.75rem;
+        min-width: 700px;
     }
     
     .organiser-table th,
@@ -450,9 +492,7 @@
     }
     
     .name-container {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 4px;
+        gap: 8px;
     }
     
     .avatar {
@@ -462,14 +502,43 @@
     }
     
     .modal-content {
-        width: 100%;
-        max-width: 500px;
-        margin: 0;
         padding: 16px;
+        border-radius: 16px;
     }
     
     .form-row {
         grid-template-columns: 1fr !important;
         gap: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .organiser-title {
+        font-size: 1.1rem;
+    }
+    
+    .add-organiser-btn {
+        padding: 10px 16px;
+        font-size: 0.85rem;
+    }
+    
+    .stat-card h3 {
+        font-size: 1.5rem;
+    }
+    
+    .organiser-table {
+        min-width: 650px;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .organiser-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1025px) {
+    .organiser-stats {
+        grid-template-columns: repeat(3, 1fr);
     }
 }

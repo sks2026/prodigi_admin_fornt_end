@@ -1,7 +1,13 @@
 .student-management-page {
-  padding: 24px;
+  padding: 16px;
   background: #f8fafc;
   min-height: 100vh;
+}
+
+@media (min-width: 768px) {
+  .student-management-page {
+    padding: 24px;
+  }
 }
 
 .student-header {
@@ -391,6 +397,12 @@
     padding: 16px;
   }
 
+  .student-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
   .student-title {
     font-size: 1.5rem;
   }
@@ -398,27 +410,138 @@
   .add-student-btn {
     padding: 10px 16px;
     font-size: 0.9rem;
+    width: 100%;
+    justify-content: center;
   }
 
   .student-stats {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .stat-card {
+    padding: 16px;
+  }
+
+  .stat-card h3 {
+    font-size: 2rem;
   }
 
   .student-table-container {
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 12px;
   }
 
   .student-table {
     min-width: 800px;
   }
 
+  .student-table th,
+  .student-table td {
+    padding: 12px;
+    font-size: 0.85rem;
+  }
+
+  .avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 0.9rem;
+  }
+
+  .id-badge {
+    width: 32px;
+    height: 32px;
+    line-height: 32px;
+    font-size: 0.85rem;
+  }
+
+  .modal-overlay {
+    padding: 10px;
+  }
+
   .modal-content {
-    max-width: 95%;
+    max-width: 100%;
+    max-height: 95vh;
+    border-radius: 16px;
+  }
+
+  .modal-header {
+    padding: 20px;
+  }
+
+  .modal-title {
+    font-size: 1.25rem;
   }
 
   .modal-content form {
-    padding: 24px;
+    padding: 20px;
   }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .modal-actions {
+    flex-direction: column-reverse;
+    gap: 12px;
+  }
+
+  .btn-secondary,
+  .btn-primary {
+    width: 100%;
+    padding: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .student-title {
+    font-size: 1.25rem;
+  }
+
+  .student-title::before {
+    font-size: 1.5rem;
+  }
+
+  .stat-card h3 {
+    font-size: 1.75rem;
+  }
+
+  .student-table {
+    min-width: 700px;
+    font-size: 0.8rem;
+  }
+
+  .modal-header {
+    padding: 16px;
+  }
+
+  .modal-content form {
+    padding: 16px;
+  }
+
+  .form-input {
+    padding: 10px 14px;
+    font-size: 0.95rem;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .student-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 1025px) {
+  .student-stats {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
 
   .form-row {
     grid-template-columns: 1fr;

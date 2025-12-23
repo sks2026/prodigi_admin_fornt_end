@@ -115,14 +115,68 @@ div {
         flex-direction: column;
         gap: 15px;
         text-align: center;
+        padding: 16px;
     }
     
     .create h1 {
-        font-size: 20px;
+        font-size: 1.25rem;
     }
     
     .create button {
         padding: 10px 20px;
         font-size: 14px;
+        width: 100%;
+    }
+
+    .file-upload-section {
+        padding: 20px;
+        margin-top: 16px;
+    }
+
+    .file-upload-section h3 {
+        font-size: 1.1rem;
+    }
+
+    .file-upload-container {
+        padding: 30px 15px;
+    }
+
+    .upload-icon {
+        font-size: 36px;
+    }
+
+    .file-upload-container p {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .create {
+        padding: 12px;
+    }
+
+    .create h1 {
+        font-size: 1.1rem;
+    }
+
+    .create button {
+        padding: 10px 16px;
+        font-size: 13px;
+    }
+
+    .file-upload-section {
+        padding: 16px;
+    }
+
+    .file-upload-container {
+        padding: 25px 12px;
+    }
+
+    .upload-icon {
+        font-size: 32px;
+    }
+
+    .file-upload-container p {
+        font-size: 13px;
     }
 }

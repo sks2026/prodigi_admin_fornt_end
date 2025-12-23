@@ -99,6 +99,46 @@
 
 .clickable-status:hover {
   transform: scale(1.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .requests {
+    font-size: 0.85rem;
+  }
+
+  .requests th,
+  .requests td {
+    padding: 8px;
+  }
+
+  .requests td:nth-child(4) {
+    max-width: 150px;
+  }
+
+  .priority,
+  .status {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .requests {
+    font-size: 0.75rem;
+  }
+
+  .requests th,
+  .requests td {
+    padding: 6px;
+  }
+
+  .requests td:nth-child(4) {
+    max-width: 100px;
+  }
+}
+  transform: scale(1.05);
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 

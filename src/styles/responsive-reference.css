@@ -1,0 +1,170 @@
+/* 
+ * RESPONSIVE BREAKPOINTS REFERENCE
+ * Copy this to your CSS file or use as reference
+ */
+
+/* ========================================
+   MOBILE SMALL (< 480px)
+   - iPhone SE, Small Android phones
+   ======================================== */
+@media (max-width: 480px) {
+  /* Ultra compact layouts */
+  /* Single column everything */
+  /* Smallest font sizes */
+  /* Full-width buttons */
+}
+
+/* ========================================
+   MOBILE (480px - 768px)
+   - Most smartphones
+   ======================================== */
+@media (max-width: 768px) {
+  /* Mobile-optimized layouts */
+  /* Stack elements vertically */
+  /* Touch-friendly sizes (44px min) */
+  /* Simplified navigation */
+}
+
+/* ========================================
+   TABLET (768px - 1024px)
+   - iPad, Android tablets
+   ======================================== */
+@media (min-width: 769px) and (max-width: 1024px) {
+  /* 2-column grids */
+  /* Larger touch targets */
+  /* Hybrid mobile/desktop layout */
+}
+
+/* ========================================
+   DESKTOP (> 1024px)
+   - Laptops, monitors
+   ======================================== */
+@media (min-width: 1025px) {
+  /* Multi-column layouts */
+  /* Sidebar visible */
+  /* Full desktop features */
+}
+
+/* ========================================
+   LARGE DESKTOP (> 1280px)
+   - Large monitors
+   ======================================== */
+@media (min-width: 1280px) {
+  /* Maximum width containers */
+  /* More whitespace */
+  /* Enhanced layouts */
+}
+
+/* ========================================
+   COMMON RESPONSIVE PATTERNS
+   ======================================== */
+
+/* Grid Pattern */
+.responsive-grid {
+  display: grid;
+  gap: 16px;
+}
+
+/* Mobile: 1 column */
+@media (max-width: 768px) {
+  .responsive-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Tablet: 2 columns */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .responsive-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Desktop: 3 columns */
+@media (min-width: 1025px) {
+  .responsive-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Flex Pattern */
+.responsive-flex {
+  display: flex;
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .responsive-flex {
+    flex-direction: column;
+  }
+}
+
+/* Table Pattern */
+.responsive-table-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+  .responsive-table {
+    min-width: 800px; /* Prevent column squishing */
+  }
+}
+
+/* Modal Pattern */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-content {
+  width: 100%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .modal-overlay {
+    padding: 10px;
+  }
+  
+  .modal-content {
+    max-width: 100%;
+    max-height: 95vh;
+  }
+}
+
+/* Button Pattern */
+.responsive-button {
+  padding: 12px 24px;
+  font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+  .responsive-button {
+    width: 100%;
+    padding: 14px;
+  }
+}
+
+/* Typography Pattern */
+.responsive-heading {
+  font-size: 2rem;
+}
+
+@media (max-width: 768px) {
+  .responsive-heading {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .responsive-heading {
+    font-size: 1.25rem;
+  }
+}
