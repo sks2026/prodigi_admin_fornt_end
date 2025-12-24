@@ -100,7 +100,9 @@ const OSyllabus = ({ fun, ID }) => {
       "Colouring",
       "Singing",
       "Dancing",
-      "Drawing"
+      "Drawing",
+      "yoga",
+      "pickleball"
 
     ],
     "Others": [
