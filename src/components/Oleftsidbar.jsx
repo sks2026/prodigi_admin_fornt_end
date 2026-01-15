@@ -22,7 +22,7 @@ const Oleftsidbar = ({ fun,page,ID }) => {
         redirect: "follow"
       };
       
-      const response = await fetch(`https://api.prodigiedu.com/api/competitions/field-completion/${ID}`, requestOptions);
+      const response = await fetch(`http://localhost:3001/api/competitions/field-completion/${ID}`, requestOptions);
       
       // Check if response is ok and content type is JSON
       if (!response.ok) {

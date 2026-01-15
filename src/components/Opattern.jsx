@@ -111,7 +111,7 @@ const OPattern = ({ fun, ID }) => {
       };
 
       const response = await fetch(
-        `https://api.prodigiedu.com/api/competitions/getsyllabus/${competitionId}`,
+        `http://localhost:3001/api/competitions/getsyllabus/${competitionId}`,
         requestOptions
       );
 
@@ -176,7 +176,7 @@ const OPattern = ({ fun, ID }) => {
           redirect: "follow"
         };
 
-        const response = await fetch(`https://api.prodigiedu.com/api/competitions/getpattern/${competitionId}`, requestOptions);
+        const response = await fetch(`http://localhost:3001/api/competitions/getpattern/${competitionId}`, requestOptions);
         const result = await response.json();
 
         console.log("Fetched pattern:", result);
@@ -575,7 +575,7 @@ const OPattern = ({ fun, ID }) => {
         redirect: "follow"
       };
 
-      const response = await fetch(`https://api.prodigiedu.com/api/competitions/updatepattern/${competitionId}`, requestOptions);
+      const response = await fetch(`http://localhost:3001/api/competitions/updatepattern/${competitionId}`, requestOptions);
 
       if (response.ok) {
         const result = await response.text();

@@ -63,7 +63,7 @@ const CreateNewPassword = () => {
         redirect: "follow"
       };
 
-      fetch("https://api.prodigiedu.com/api/admin/reset-password", requestOptions)
+      fetch("http://localhost:3001/api/admin/reset-password", requestOptions)
         .then((response) => response.text())
         .then((result) => {
           console.log(result)

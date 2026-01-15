@@ -66,7 +66,7 @@ const Organisersheader = () => {
       const token = localStorage.getItem("token");
 
       // Call logout API
-      const response = await fetch(`https://api.prodigiedu.com/api/organisations/logout`, {
+      const response = await fetch(`http://localhost:3001/api/organisations/logout`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

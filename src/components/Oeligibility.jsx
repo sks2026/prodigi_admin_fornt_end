@@ -107,7 +107,7 @@ const { Title, Text } = Typography;
         };
 
         const response = await fetch(
-          `https://api.prodigiedu.com/api/competitions/getsyllabus/${competitionId}`,
+          `http://localhost:3001/api/competitions/getsyllabus/${competitionId}`,
           requestOptions
         );
 
@@ -459,7 +459,7 @@ const { Title, Text } = Typography;
         redirect: "follow"
       };
 
-      const response = await fetch(`https://api.prodigiedu.com/api/competitions/eligibility/${competitionId}`, requestOptions);
+      const response = await fetch(`http://localhost:3001/api/competitions/eligibility/${competitionId}`, requestOptions);
       const result = await response.text();
       
       // Parse and validate API response

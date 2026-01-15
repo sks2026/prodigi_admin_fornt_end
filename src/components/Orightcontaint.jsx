@@ -473,7 +473,7 @@ const Orightcontaint = ({ fun, ID, organizerData }) => {
     
     try {
       const response = await fetch(
-        `https://api.prodigiedu.com/api/competitions/getoverview/${competitionId}`,
+        `http://localhost:3001/api/competitions/getoverview/${competitionId}`,
         {
           method: "GET",
           redirect: "follow",
@@ -528,7 +528,7 @@ const Orightcontaint = ({ fun, ID, organizerData }) => {
         if (fetchedData.image) {
           const imageUrl = fetchedData.image.startsWith("http")
             ? fetchedData.image
-            : `https://api.prodigiedu.com${fetchedData.image}`;
+            : `http://localhost:3001${fetchedData.image}`;
           setShowImage(imageUrl);
           setFileName(fetchedData.image.split("/").pop() || "Uploaded Image");
           setFileSize(fetchedData.imageSize || 0);
@@ -594,8 +594,8 @@ const Orightcontaint = ({ fun, ID, organizerData }) => {
       formdata.append("stages", JSON.stringify(competitionData.stages));
 
       const url = competitionId
-        ? `https://api.prodigiedu.com/api/competitions/updateoverview/${competitionId}`
-        : `https://api.prodigiedu.com/api/competitions/overview`;
+        ? `http://localhost:3001/api/competitions/updateoverview/${competitionId}`
+        : `http://localhost:3001/api/competitions/overview`;
 
       const method = competitionId ? "PUT" : "POST";
 

@@ -76,7 +76,7 @@ const AdminDashboard = () => {
                 redirect: "follow"
             };
 
-            fetch("https://api.prodigiedu.com/api/contact-us/get", requestOptions)
+            fetch("http://localhost:3001/api/contact-us/get", requestOptions)
                 .then((response) => response.json())
                 .then((result) => {
                     setGetmsg(result.data);
@@ -98,7 +98,7 @@ const AdminDashboard = () => {
                 return;
             }
 
-            const response = await fetch("https://api.prodigiedu.com/api/admin/profile", {
+            const response = await fetch("http://localhost:3001/api/admin/profile", {
                 method: "GET",
                 headers: {
                     "Authorization": `Bearer ${token}`,

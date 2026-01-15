@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import CompetitionDetailsModal from './CompetitionDetailsModal'
 import CreateCompetitionModal from './CreateCompetitionModal'
 import AddBankAccountModal from './AddBankAccountModal'
+import { API_BASE_URL } from '../config/apiConfig'
 
 const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) => {
     const [activeTab, setActiveTab] = useState('requests') // 'requests' or 'competitions'
@@ -17,6 +18,8 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
     const [showCreateCompModal, setShowCreateCompModal] = useState(false)
     const [showBankAccountModal, setShowBankAccountModal] = useState(false)
     const [editCompetitionId, setEditCompetitionId] = useState(null)
+    const [reportLoading, setReportLoading] = useState(false)
+    const [reportMessage, setReportMessage] = useState({ type: '', text: '' })
 
     const handleViewCompetition = (competitionId) => {
         setSelectedCompetitionId(competitionId)
@@ -41,7 +44,7 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
         if (editCompetitionId && organizerData?._id) {
             try {
                 const response = await fetch(
-                    `https://api.prodigiedu.com/api/competitions/getAllByOrganizerId?organizerId=${organizerData._id}`
+                    `http://localhost:3001/api/competitions/getAllByOrganizerId?organizerId=${organizerData._id}`
                 )
                 const data = await response.json()
                 if (response.ok && data.status) {
@@ -70,7 +73,7 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
 
         try {
             const response = await fetch(
-                `https://api.prodigiedu.com/api/competitions/toggleStatus/${competitionId}`,
+                `http://localhost:3001/api/competitions/toggleStatus/${competitionId}`,
                 {
                     method: 'PUT',
                     headers: {
@@ -101,6 +104,52 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
         }
     }
 
+    const handleSendReport = async () => {
+        if (!organizerData?._id) {
+            alert('Organizer data not available')
+            return
+        }
+
+        if (!window.confirm('Are you sure you want to send the report via email to the organizer?')) {
+            return
+        }
+
+        setReportLoading(true)
+        setReportMessage({ type: '', text: '' })
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/organizer-reports/send-report`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    organizerId: organizerData._id
+                })
+            })
+
+            const result = await response.json()
+
+            if (response.ok && result.success) {
+                setReportMessage({ type: 'success', text: result.message || 'Report sent successfully!' })
+                alert(`Report sent successfully to ${result.data?.emailSentTo || organizerData.email || organizerData.organiserEmail}`)
+            } else {
+                setReportMessage({ type: 'error', text: result.message || 'Failed to send report' })
+                alert(result.message || 'Failed to send report. Please try again.')
+            }
+        } catch (error) {
+            console.error('Error sending report:', error)
+            setReportMessage({ type: 'error', text: 'Failed to send report. Please try again.' })
+            alert('Failed to send report. Please try again.')
+        } finally {
+            setReportLoading(false)
+            // Clear message after 5 seconds
+            setTimeout(() => {
+                setReportMessage({ type: '', text: '' })
+            }, 5000)
+        }
+    }
+
     const handleDuplicateCompetition = async (competitionId) => {
         if (!window.confirm('Are you sure you want to duplicate this competition? The duplicate will be created with closed status.')) {
             return
@@ -108,7 +157,7 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
 
         try {
             const response = await fetch(
-                `https://api.prodigiedu.com/api/competitions/duplicate/${competitionId}`,
+                `http://localhost:3001/api/competitions/duplicate/${competitionId}`,
                 {
                     method: 'POST',
                     headers: {
@@ -124,7 +173,7 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
                 // Refresh the competitions list
                 if (organizerData?._id) {
                     const refreshResponse = await fetch(
-                        `https://api.prodigiedu.com/api/competitions/getAllByOrganizerId?organizerId=${organizerData._id}`
+                        `http://localhost:3001/api/competitions/getAllByOrganizerId?organizerId=${organizerData._id}`
                     )
                     const refreshData = await refreshResponse.json()
                     if (refreshResponse.ok && refreshData.status) {
@@ -177,7 +226,7 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
 
             try {
                 const response = await fetch(
-                    `https://api.prodigiedu.com/api/competitions/getAllByOrganizerId?organizerId=${organizerData._id}`
+                    `http://localhost:3001/api/competitions/getAllByOrganizerId?organizerId=${organizerData._id}`
                 )
 
                 const data = await response.json()
@@ -219,7 +268,7 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
             setRequestsError('')
 
             try {
-                const response = await fetch(`https://api.prodigiedu.com/api/customer-requests/my-requests/${customerId}`)
+                const response = await fetch(`http://localhost:3001/api/customer-requests/my-requests/${customerId}`)
                 const result = await response.json()
 
                 if (response.ok && result.success && result.data && Array.isArray(result.data.requests)) {
@@ -611,6 +660,23 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
 
             </div>
 
+            {reportMessage.text && (
+                <div
+                    style={{
+                        padding: '12px 16px',
+                        marginTop: 16,
+                        marginBottom: 16,
+                        borderRadius: 8,
+                        backgroundColor: reportMessage.type === 'error' ? '#fee2e2' : '#d1fae5',
+                        color: reportMessage.type === 'error' ? '#991b1b' : '#065f46',
+                        fontSize: 14,
+                        fontWeight: 500
+                    }}
+                >
+                    {reportMessage.text}
+                </div>
+            )}
+
             <div style={{ display: 'flex', gap: 12, marginTop: 20 }}>
                 <button
                     type="button"
@@ -633,21 +699,32 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
                 </button>
                 <button
                     type="button"
+                    onClick={handleSendReport}
+                    disabled={!organizerData?._id || reportLoading}
                     style={{
                         padding: '10px 20px',
-                        backgroundColor: '#16a34a',
+                        backgroundColor: reportLoading || !organizerData?._id ? '#9ca3af' : '#16a34a',
                         color: '#fff',
                         border: 'none',
                         borderRadius: '6px',
                         fontSize: '14px',
                         fontWeight: '500',
-                        cursor: 'pointer',
+                        cursor: reportLoading || !organizerData?._id ? 'not-allowed' : 'pointer',
+                        opacity: reportLoading || !organizerData?._id ? 0.6 : 1,
                         transition: 'background-color 0.2s'
                     }}
-                    onMouseEnter={(e) => e.target.style.backgroundColor = '#15803d'}
-                    onMouseLeave={(e) => e.target.style.backgroundColor = '#16a34a'}
+                    onMouseEnter={(e) => {
+                        if (!reportLoading && organizerData?._id) {
+                            e.target.style.backgroundColor = '#15803d'
+                        }
+                    }}
+                    onMouseLeave={(e) => {
+                        if (!reportLoading && organizerData?._id) {
+                            e.target.style.backgroundColor = '#16a34a'
+                        }
+                    }}
                 >
-                    Send Report
+                    {reportLoading ? 'Sending...' : 'Send Report'}
                 </button>
                 <button
                     type="button"
