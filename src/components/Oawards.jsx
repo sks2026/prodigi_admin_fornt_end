@@ -477,7 +477,15 @@ Oawards = ({ fun, ID }) => {
         width: "100%",
       }}
     >
-      <Card style={{ maxWidth: "100%", margin: "0 auto" }}>
+      <Card 
+        style={{ 
+          maxWidth: "100%", 
+          margin: "0 auto", 
+          overflow: "visible",
+          paddingBottom: "24px"
+        }}
+        bodyStyle={{ paddingBottom: "24px" }}
+      >
                 {stages.length === 0 ? (
           <div style={{ textAlign: "center", padding: "40px" }}>
             <Title level={4}>No stages found for this competition. Please add stages first.</Title>
@@ -493,105 +501,115 @@ Oawards = ({ fun, ID }) => {
               }))}
             />
             
-            <div style={{ marginTop: 24 }}>
-          <Title level={3} style={{ marginBottom: 24 }}>
-            Awards
-          </Title>
+            <div style={{ marginTop: 24, display: "flex", flexDirection: "column", minHeight: "400px" }}>
+          <div style={{ flex: "1 1 auto", overflow: "hidden" }}>
+            <Title level={3} style={{ marginBottom: 24 }}>
+              Awards
+            </Title>
 
-          <Row style={{ marginBottom: 24 }}>
-            <Col span={12}>
-              <div
-                onMouseEnter={() => {
-                  if (hoverTimerRef.current) {
-                    clearTimeout(hoverTimerRef.current);
-                  }
-                  setAwardTypeDropdownOpen(true);
-                }}
-                onMouseLeave={() => {
-                  hoverTimerRef.current = setTimeout(() => {
-                    setAwardTypeDropdownOpen(false);
-                  }, 300);
-                }}
-                style={{ position: 'relative' }}
-              >
-                <label
-                  style={{ display: "block", marginBottom: 8, fontWeight: 500 }}
-                >
-                  Award Type
-                </label>
-                <Select
-                  placeholder="Select All Award Types"
-                  style={{ width: "100%" }}
-                  value={selectedAwardType}
-                  onChange={handleAwardTypeSelect}
-                  suffixIcon={<DownOutlined />}
-                  options={availableOptions}
-                  size="large"
-                  showSearch
-                  open={awardTypeDropdownOpen}
-                  onDropdownOpenChange={(open) => {
-                    if (hoverTimerRef.current) {
-                      clearTimeout(hoverTimerRef.current);
-                    }
-                    setAwardTypeDropdownOpen(open);
-                  }}
-                  onFocus={() => {
+            <Row style={{ marginBottom: 24 }}>
+              <Col span={12}>
+                <div
+                  onMouseEnter={() => {
                     if (hoverTimerRef.current) {
                       clearTimeout(hoverTimerRef.current);
                     }
                     setAwardTypeDropdownOpen(true);
                   }}
-                  filterOption={(input, option) =>
-                    (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-                  }
-                  getPopupContainer={(trigger) => trigger.parentElement}
-                />
-              </div>
-            </Col>
-          </Row>
-
-          {currentTabAwardTypes.length === 0 ? (
-            <div
-              style={{
-                textAlign: "center",
-                color: "#999",
-                padding: "40px 20px",
-                border: "2px dashed #d9d9d9",
-                borderRadius: "8px",
-                marginBottom: 24,
-              }}
-            >
-              <div style={{ fontSize: "16px", marginBottom: "8px" }}>
-                No Award Types Added
-              </div>
-              <div style={{ fontSize: "14px" }}>
-                At least 1 award type is mandatory. Select an award type from the dropdown above to get started.
-              </div>
-            </div>
-          ) : (
-            <Collapse
-              activeKey={activeKeys}
-              onChange={setActiveKeys}
-              style={{ marginBottom: 24 }}
-              expandIcon={() => null}
-            >
-              {currentTabAwardTypes.map((type) => (
-                <Panel
-                  key={type.id.toString()}
-                  header={customCollapseHeader(type)}
-                  style={{ marginBottom: 8 }}
+                  onMouseLeave={() => {
+                    hoverTimerRef.current = setTimeout(() => {
+                      setAwardTypeDropdownOpen(false);
+                    }, 300);
+                  }}
+                  style={{ position: 'relative' }}
                 >
-                  {renderAwardTypeContent(type)}
-                </Panel>
-              ))}
-            </Collapse>
-          )}
+                  <label
+                    style={{ display: "block", marginBottom: 8, fontWeight: 500 }}
+                  >
+                    Award Type
+                  </label>
+                  <Select
+                    placeholder="Select All Award Types"
+                    style={{ width: "100%" }}
+                    value={selectedAwardType}
+                    onChange={handleAwardTypeSelect}
+                    suffixIcon={<DownOutlined />}
+                    options={availableOptions}
+                    size="large"
+                    showSearch
+                    open={awardTypeDropdownOpen}
+                    onDropdownOpenChange={(open) => {
+                      if (hoverTimerRef.current) {
+                        clearTimeout(hoverTimerRef.current);
+                      }
+                      setAwardTypeDropdownOpen(open);
+                    }}
+                    onFocus={() => {
+                      if (hoverTimerRef.current) {
+                        clearTimeout(hoverTimerRef.current);
+                      }
+                      setAwardTypeDropdownOpen(true);
+                    }}
+                    filterOption={(input, option) =>
+                      (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                    }
+                    getPopupContainer={(trigger) => trigger.parentElement}
+                  />
+                </div>
+              </Col>
+            </Row>
+
+            {currentTabAwardTypes.length === 0 ? (
+              <div
+                style={{
+                  textAlign: "center",
+                  color: "#999",
+                  padding: "40px 20px",
+                  border: "2px dashed #d9d9d9",
+                  borderRadius: "8px",
+                  marginBottom: 24,
+                }}
+              >
+                <div style={{ fontSize: "16px", marginBottom: "8px" }}>
+                  No Award Types Added
+                </div>
+                <div style={{ fontSize: "14px" }}>
+                  At least 1 award type is mandatory. Select an award type from the dropdown above to get started.
+                </div>
+              </div>
+            ) : (
+              <div style={{ maxHeight: "200px", overflowY: "auto", marginBottom: 24 }}>
+                <Collapse
+                  activeKey={activeKeys}
+                  onChange={setActiveKeys}
+                  style={{ position: "relative", zIndex: 0 }}
+                  expandIcon={() => null}
+                >
+                  {currentTabAwardTypes.map((type) => (
+                    <Panel
+                      key={type.id.toString()}
+                      header={customCollapseHeader(type)}
+                      style={{ marginBottom: 8 }}
+                    >
+                      {renderAwardTypeContent(type)}
+                    </Panel>
+                  ))}
+                </Collapse>
+              </div>
+            )}
+          </div>
 
           <div
             style={{
               display: "flex",
               justifyContent: "flex-end",
-              marginTop: 32,
+              paddingTop: 16,
+              paddingBottom: 16,
+              width: "100%",
+              flexShrink: 0,
+              borderTop: "1px solid #f0f0f0",
+              backgroundColor: "#fff",
+              marginTop: "auto",
             }}
           >
             <Button
