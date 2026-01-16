@@ -44,7 +44,7 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
         if (editCompetitionId && organizerData?._id) {
             try {
                 const response = await fetch(
-                    `http://localhost:3001/api/competitions/getAllByOrganizerId?organizerId=${organizerData._id}`
+                    `https://prodigiedu.com/api/competitions/getAllByOrganizerId?organizerId=${organizerData._id}`
                 )
                 const data = await response.json()
                 if (response.ok && data.status) {
@@ -73,7 +73,7 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
 
         try {
             const response = await fetch(
-                `http://localhost:3001/api/competitions/toggleStatus/${competitionId}`,
+                `https://prodigiedu.com/api/competitions/toggleStatus/${competitionId}`,
                 {
                     method: 'PUT',
                     headers: {
@@ -157,7 +157,7 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
 
         try {
             const response = await fetch(
-                `http://localhost:3001/api/competitions/duplicate/${competitionId}`,
+                `https://prodigiedu.com/api/competitions/duplicate/${competitionId}`,
                 {
                     method: 'POST',
                     headers: {
@@ -173,7 +173,7 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
                 // Refresh the competitions list
                 if (organizerData?._id) {
                     const refreshResponse = await fetch(
-                        `http://localhost:3001/api/competitions/getAllByOrganizerId?organizerId=${organizerData._id}`
+                        `https://prodigiedu.com/api/competitions/getAllByOrganizerId?organizerId=${organizerData._id}`
                     )
                     const refreshData = await refreshResponse.json()
                     if (refreshResponse.ok && refreshData.status) {
@@ -226,7 +226,7 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
 
             try {
                 const response = await fetch(
-                    `http://localhost:3001/api/competitions/getAllByOrganizerId?organizerId=${organizerData._id}`
+                    `https://prodigiedu.com/api/competitions/getAllByOrganizerId?organizerId=${organizerData._id}`
                 )
 
                 const data = await response.json()
@@ -268,7 +268,7 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
             setRequestsError('')
 
             try {
-                const response = await fetch(`http://localhost:3001/api/customer-requests/my-requests/${customerId}`)
+                const response = await fetch(`https://prodigiedu.com/api/customer-requests/my-requests/${customerId}`)
                 const result = await response.json()
 
                 if (response.ok && result.success && result.data && Array.isArray(result.data.requests)) {

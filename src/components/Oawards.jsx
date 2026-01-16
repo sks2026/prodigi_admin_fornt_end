@@ -54,7 +54,7 @@ Oawards = ({ fun, ID }) => {
       };
 
       const response = await fetch(
-        `http://localhost:3001/api/competitions/getsyllabus/${competitionId}`,
+        `https://prodigiedu.com/api/competitions/getsyllabus/${competitionId}`,
         requestOptions
       );
 
@@ -428,7 +428,7 @@ Oawards = ({ fun, ID }) => {
       };
 
       const response = await fetch(
-        `http://localhost:3001/api/competitions/awards/${competitionId}`,
+        `https://prodigiedu.com/api/competitions/awards/${competitionId}`,
         requestOptions
       );
 
