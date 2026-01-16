@@ -287,7 +287,7 @@ const OSyllabus = ({ fun, ID }) => {
         redirect: "follow",
       };
 
-      const url = `https://prodigiedu.com/api/competitions/updatesyllabus/${competitionId}`;
+      const url = `https://api.prodigiedu.com/api/competitions/updatesyllabus/${competitionId}`;
       const response = await fetch(url, requestOptions);
 
       if (!response.ok) {
@@ -620,7 +620,7 @@ const OSyllabus = ({ fun, ID }) => {
         redirect: "follow",
       };
 
-      const url = `https://prodigiedu.com/api/competitions/updatesyllabus/${competitionId}`;
+      const url = `https://api.prodigiedu.com/api/competitions/updatesyllabus/${competitionId}`;
 
       const response = await fetch(url, requestOptions);
 
@@ -653,7 +653,7 @@ const OSyllabus = ({ fun, ID }) => {
       };
 
       const response = await fetch(
-        `https://prodigiedu.com/api/competitions/getsyllabus/${competitionId}`,
+        `https://api.prodigiedu.com/api/competitions/getsyllabus/${competitionId}`,
         requestOptions
       );
 

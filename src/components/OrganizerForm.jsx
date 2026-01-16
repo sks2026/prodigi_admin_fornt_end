@@ -23,7 +23,7 @@ const OrganizerForm = ({ form, setForm, onVerify }) => {
                 : `mobileNumber=${encodeURIComponent(form.organiserId)}`
 
             const response = await fetch(
-                `https://prodigiedu.com/api/organisations/search?${searchParam}`
+                `https://api.prodigiedu.com/api/organisations/search?${searchParam}`
             )
 
             const data = await response.json()

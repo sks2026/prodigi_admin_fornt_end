@@ -36,7 +36,7 @@ const LoginForm = () => {
                 redirect: "follow"
             };
 
-            fetch("https://prodigiedu.com/api/admin/forgot-password", requestOptions)
+            fetch("https://api.prodigiedu.com/api/admin/forgot-password", requestOptions)
                 .then(async (response) => {
                     const data = await response.json().catch(() => ({}))
                     if (response.ok) {

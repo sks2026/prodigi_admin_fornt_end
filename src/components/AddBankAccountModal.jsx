@@ -30,7 +30,7 @@ const AddBankAccountModal = ({ isOpen, onClose, organizerId }) => {
 
         try {
             const response = await fetch(
-                `https://prodigiedu.com/api/competitions/bankaccount/${organizerId}`,
+                `https://api.prodigiedu.com/api/competitions/bankaccount/${organizerId}`,
                 {
                     method: 'POST',
                     headers: {

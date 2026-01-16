@@ -1,7 +1,7 @@
 import { fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 export const baseQuery = fetchBaseQuery({
-  baseUrl: 'https://prodigiedu.com',
+  baseUrl: 'https://api.prodigiedu.com',
   prepareHeaders: (headers, { getState }) => {
     // Get token from localStorage - try student_token first, then fallback to token
     const studentToken = localStorage.getItem('student_token');

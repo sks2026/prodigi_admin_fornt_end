@@ -102,7 +102,7 @@ export default function Oregistration({ fun, ID, organizerData }) {
         redirect: "follow",
       };
 
-      const url = `https://prodigiedu.com/api/competitions/bankaccount/${organizerId}`;
+      const url = `https://api.prodigiedu.com/api/competitions/bankaccount/${organizerId}`;
       
       const response = await fetch(url, requestOptions);
 
@@ -153,7 +153,7 @@ export default function Oregistration({ fun, ID, organizerData }) {
       };
 
       const response = await fetch(
-        `https://prodigiedu.com/api/competitions/getsyllabus/${competitionId}`,
+        `https://api.prodigiedu.com/api/competitions/getsyllabus/${competitionId}`,
         requestOptions
       );
 
@@ -191,7 +191,7 @@ export default function Oregistration({ fun, ID, organizerData }) {
         redirect: "follow"
       };
 
-      const response = await fetch(`https://prodigiedu.com/api/competitions/registration/${competitionId}`, requestOptions);
+      const response = await fetch(`https://api.prodigiedu.com/api/competitions/registration/${competitionId}`, requestOptions);
       
       if (response.ok) {
         const result = await response.json();
@@ -395,8 +395,8 @@ export default function Oregistration({ fun, ID, organizerData }) {
         redirect: "follow"
       }; 
       
-      console.log('🌐 Making API call to:', `https://prodigiedu.com/api/competitions/registration/${competitionId}`);
-      const response = await fetch(`https://prodigiedu.com/api/competitions/registration/${competitionId}`, requestOptions);
+      console.log('🌐 Making API call to:', `https://api.prodigiedu.com/api/competitions/registration/${competitionId}`);
+      const response = await fetch(`https://api.prodigiedu.com/api/competitions/registration/${competitionId}`, requestOptions);
       
       console.log('📥 API Response status:', response.status);
       
