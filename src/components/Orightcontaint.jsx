@@ -44,10 +44,6 @@ const Orightcontaint = ({ fun, ID, organizerData }) => {
     name: "",
     image: "",
     description: "",
-    participation: "Individual",
-    applicant: "Self",
-    teamSizeMin: "",
-    teamSizeMax: "",
     stages: [
       {
         id: Date.now(),
@@ -56,8 +52,6 @@ const Orightcontaint = ({ fun, ID, organizerData }) => {
         endDate: "",
         mode: "Online",
         participation: "Individual",
-        teamSizeMin: "",
-        teamSizeMax: "",
         location: ["IN"],
         duration: "",
       },
@@ -209,8 +203,6 @@ const Orightcontaint = ({ fun, ID, organizerData }) => {
         endDate: "",
         mode: "Online",
         participation: "Individual",
-        teamSizeMin: "",
-        teamSizeMax: "",
         location: ["IN"], // Default to India
         duration: "",
       };
@@ -504,8 +496,6 @@ const Orightcontaint = ({ fun, ID, organizerData }) => {
                 : "",
               mode: stage.mode || "Online",
               participation: stage.participation || "Individual",
-              teamSizeMin: stage.teamSizeMin || "",
-              teamSizeMax: stage.teamSizeMax || "",
               location: Array.isArray(stage.location)
                 ? stage.location
                 : ["IN"],
@@ -519,8 +509,6 @@ const Orightcontaint = ({ fun, ID, organizerData }) => {
                 endDate: "",
                 mode: "Online",
                 participation: "Individual",
-                teamSizeMin: "",
-                teamSizeMax: "",
                 location: ["IN"],
                 duration: "",
               },
@@ -530,10 +518,6 @@ const Orightcontaint = ({ fun, ID, organizerData }) => {
           name: fetchedData.name || "",
           description: fetchedData.description || "",
           image: fetchedData.image || "",
-          participation: fetchedData.participation || "Individual",
-          applicant: fetchedData.applicant || "Self",
-          teamSizeMin: fetchedData.teamSizeMin || "",
-          teamSizeMax: fetchedData.teamSizeMax || "",
           stages: normalizedStages,
         };
 
@@ -593,19 +577,7 @@ const Orightcontaint = ({ fun, ID, organizerData }) => {
       formdata.append("organizerId", organizerId);
       formdata.append("name", competitionData.name);
       formdata.append("description", competitionData.description);
-      formdata.append("participation", competitionData.participation);
-      formdata.append("applicant", competitionData.applicant);
-
-      // Only add team size if participation is Team
-      if (competitionData.participation === "Team") {
-        if (competitionData.teamSizeMin) {
-          formdata.append("teamSizeMin", competitionData.teamSizeMin);
-        }
-        if (competitionData.teamSizeMax) {
-          formdata.append("teamSizeMax", competitionData.teamSizeMax);
-        }
-      }
-
+      
       // Handle image data properly
       if (competitionData.image) {
         if (competitionData.image instanceof File) {
@@ -617,7 +589,7 @@ const Orightcontaint = ({ fun, ID, organizerData }) => {
           console.log("Image already exists:", competitionData.image);
         }
       }
-
+      
       formdata.append("user_id", userId);
       formdata.append("stages", JSON.stringify(competitionData.stages));
 
@@ -660,7 +632,7 @@ const Orightcontaint = ({ fun, ID, organizerData }) => {
       backgroundColor: "#fff",
       minHeight: "100vh",
       paddingBottom: "120px"
-    }}>
+    }}>\
       <Title
         level={2}
         style={{ marginBottom: "24px", color: "#000", fontWeight: 500 }}
@@ -805,146 +777,6 @@ const Orightcontaint = ({ fun, ID, organizerData }) => {
           />
         </Card>
       </div>
-
-      {/* Participation, Applicant, and Team Size Section */}
-      <Row gutter={24} style={{ marginBottom: "32px" }}>
-        <Col span={8}>
-          <Space direction="vertical" style={{ width: "100%" }}>
-            <Text strong style={{ color: "#000", fontSize: "14px" }}>
-              Participation<span style={{ color: "#ef4444" }}>*</span>
-            </Text>
-            <div style={{ display: "flex", gap: "8px" }}>
-              <button
-                onClick={() => {
-                  updateCompetitionField("participation", "Individual");
-                  // Clear team size when switching to Individual
-                  if (competitionData.participation === "Team") {
-                    updateCompetitionField("teamSizeMin", "");
-                    updateCompetitionField("teamSizeMax", "");
-                  }
-                }}
-                style={{
-                  padding: "8px 24px",
-                  fontSize: "14px",
-                  fontWeight: "500",
-                  border: "1px solid #10b981",
-                  cursor: "pointer",
-                  backgroundColor: competitionData.participation === "Individual" ? "#4CAF50" : "transparent",
-                  color: competitionData.participation === "Individual" ? "#ffffff" : "#4CAF50",
-                  borderRadius: "25px",
-                  transition: "all 0.2s ease",
-                  minWidth: "100px",
-                }}
-              >
-                Individual
-              </button>
-              <button
-                onClick={() => updateCompetitionField("participation", "Team")}
-                style={{
-                  padding: "8px 24px",
-                  fontSize: "14px",
-                  fontWeight: "500",
-                  border: "1px solid #10b981",
-                  cursor: "pointer",
-                  backgroundColor: competitionData.participation === "Team" ? "#4CAF50" : "transparent",
-                  color: competitionData.participation === "Team" ? "#ffffff" : "#4CAF50",
-                  borderRadius: "25px",
-                  transition: "all 0.2s ease",
-                  minWidth: "100px",
-                }}
-              >
-                Team
-              </button>
-            </div>
-          </Space>
-        </Col>
-        <Col span={8}>
-          <Space direction="vertical" style={{ width: "100%" }}>
-            <Text strong style={{ color: "#000", fontSize: "14px" }}>
-              Applicant<span style={{ color: "#ef4444" }}>*</span>
-            </Text>
-            <div style={{ display: "flex", gap: "8px" }}>
-              <button
-                onClick={() => updateCompetitionField("applicant", "Self")}
-                style={{
-                  padding: "8px 24px",
-                  fontSize: "14px",
-                  fontWeight: "500",
-                  border: "1px solid #10b981",
-                  cursor: "pointer",
-                  backgroundColor: competitionData.applicant === "Self" ? "#4CAF50" : "transparent",
-                  color: competitionData.applicant === "Self" ? "#ffffff" : "#4CAF50",
-                  borderRadius: "25px",
-                  transition: "all 0.2s ease",
-                  minWidth: "100px",
-                }}
-              >
-                Self
-              </button>
-              <button
-                onClick={() => updateCompetitionField("applicant", "School")}
-                style={{
-                  padding: "8px 24px",
-                  fontSize: "14px",
-                  fontWeight: "500",
-                  border: "1px solid #10b981",
-                  cursor: "pointer",
-                  backgroundColor: competitionData.applicant === "School" ? "#4CAF50" : "transparent",
-                  color: competitionData.applicant === "School" ? "#ffffff" : "#4CAF50",
-                  borderRadius: "25px",
-                  transition: "all 0.2s ease",
-                  minWidth: "100px",
-                }}
-              >
-                School
-              </button>
-            </div>
-          </Space>
-        </Col>
-        {competitionData.participation === "Team" && (
-          <Col span={8}>
-            <Space direction="vertical" style={{ width: "100%" }}>
-              <Text strong style={{ color: "#000", fontSize: "14px" }}>
-                Team Size
-              </Text>
-              <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <Text style={{ fontSize: "14px", color: "#666", minWidth: "40px" }}>Min.</Text>
-                  <Input
-                    type="number"
-                    placeholder="Enter"
-                    value={competitionData.teamSizeMin}
-                    onChange={(e) => updateCompetitionField("teamSizeMin", e.target.value)}
-                    style={{
-                      width: "100px",
-                      height: "40px",
-                      borderRadius: "8px",
-                      border: "1px solid #d9d9d9"
-                    }}
-                    min="1"
-                  />
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <Text style={{ fontSize: "14px", color: "#666", minWidth: "40px" }}>Max.</Text>
-                  <Input
-                    type="number"
-                    placeholder="Enter"
-                    value={competitionData.teamSizeMax}
-                    onChange={(e) => updateCompetitionField("teamSizeMax", e.target.value)}
-                    style={{
-                      width: "100px",
-                      height: "40px",
-                      borderRadius: "8px",
-                      border: "1px solid #d9d9d9"
-                    }}
-                    min={competitionData.teamSizeMin || 1}
-                  />
-                </div>
-              </div>
-            </Space>
-          </Col>
-        )}
-      </Row>
 
       <div>
         <Title level={3} style={{ marginBottom: "16px", color: "#000" }}>
@@ -1209,53 +1041,6 @@ const Orightcontaint = ({ fun, ID, organizerData }) => {
                     </div>
                   </div>
                 </div>
-
-                {/* Team Size Field - Only shown when participation is Team */}
-                {stage.participation === "Team" && (
-                  <div
-                    style={{ display: "flex", alignItems: "center", gap: "32px" }}
-                  >
-                    <div style={{ minWidth: "80px" }}>
-                      <Text strong style={{ color: "#000", fontSize: "14px" }}>
-                        Team Size
-                      </Text>
-                    </div>
-                    <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        <Text style={{ fontSize: "14px", color: "#666", minWidth: "40px" }}>Min.</Text>
-                        <Input
-                          type="number"
-                          placeholder="Enter"
-                          value={stage.teamSizeMin || ""}
-                          onChange={(e) => updateStage(stage.id, "teamSizeMin", e.target.value)}
-                          style={{
-                            width: "100px",
-                            height: "40px",
-                            borderRadius: "8px",
-                            border: "1px solid #d9d9d9"
-                          }}
-                          min="1"
-                        />
-                      </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        <Text style={{ fontSize: "14px", color: "#666", minWidth: "40px" }}>Max.</Text>
-                        <Input
-                          type="number"
-                          placeholder="Enter"
-                          value={stage.teamSizeMax || ""}
-                          onChange={(e) => updateStage(stage.id, "teamSizeMax", e.target.value)}
-                          style={{
-                            width: "100px",
-                            height: "40px",
-                            borderRadius: "8px",
-                            border: "1px solid #d9d9d9"
-                          }}
-                          min={stage.teamSizeMin || 1}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
 
                 {/* Locations Field */}
                 <div

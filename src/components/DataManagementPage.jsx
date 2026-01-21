@@ -28,6 +28,9 @@ const DataManagementPage = () => {
     const [awardUploadedData, setAwardUploadedData] = useState(null)
     const [awardUploadedFiles, setAwardUploadedFiles] = useState([])
     const [awardDataLoading, setAwardDataLoading] = useState(false)
+    const [invoiceFromDate, setInvoiceFromDate] = useState('')
+    const [invoiceToDate, setInvoiceToDate] = useState('')
+    const [invoiceLoading, setInvoiceLoading] = useState(false)
 
     const brandGreen = '#22c55e'
     const textPrimary = '#1f2937'
@@ -717,6 +720,76 @@ const DataManagementPage = () => {
         }
     }, [activeTab, uploadType])
 
+    // Handle invoice download
+    const handleDownloadInvoices = async () => {
+        if (!invoiceFromDate || !invoiceToDate) {
+            setMessage({ type: 'error', text: 'Please select both From and To dates' })
+            return
+        }
+
+        const fromDate = new Date(invoiceFromDate)
+        const toDate = new Date(invoiceToDate)
+
+        if (fromDate > toDate) {
+            setMessage({ type: 'error', text: 'From date cannot be greater than To date' })
+            return
+        }
+
+        setInvoiceLoading(true)
+        setMessage({ type: '', text: '' })
+
+        try {
+            const url = `${API_BASE_URL}/api/reports/download-invoices?fromDate=${invoiceFromDate}&toDate=${invoiceToDate}`
+
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ message: 'Failed to download invoices' }))
+                throw new Error(errorData.message || 'Failed to download invoices')
+            }
+
+            // Get filename from Content-Disposition header or use default
+            const contentDisposition = response.headers.get('Content-Disposition')
+            let filename = `Invoices_${invoiceFromDate}_to_${invoiceToDate}.zip`
+
+            if (contentDisposition) {
+                const filenameMatch = contentDisposition.match(/filename="?(.+)"?/i)
+                if (filenameMatch) {
+                    filename = filenameMatch[1]
+                }
+            }
+
+            // Convert response to blob and download
+            const blob = await response.blob()
+            const url_blob = window.URL.createObjectURL(blob)
+            const link = document.createElement('a')
+            link.href = url_blob
+            link.download = filename
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+            window.URL.revokeObjectURL(url_blob)
+
+            setMessage({ type: 'success', text: 'Invoices downloaded successfully!' })
+
+            // Clear message after 3 seconds
+            setTimeout(() => {
+                setMessage({ type: '', text: '' })
+            }, 3000)
+
+        } catch (error) {
+            console.error('Error downloading invoices:', error)
+            setMessage({ type: 'error', text: error.message || 'Failed to download invoices. Please try again.' })
+        } finally {
+            setInvoiceLoading(false)
+        }
+    }
+
     return (
         <div style={{ padding: 24 }}>
             <h2>Enter Customer Details</h2>
@@ -753,6 +826,22 @@ const DataManagementPage = () => {
                     onClick={() => setActiveTab('update')}
                 >
                     Update database
+                </button>
+                <button
+                    type="button"
+                    style={{
+                        border: 'none',
+                        background: 'transparent',
+                        padding: '10px 16px',
+                        borderBottom: activeTab === 'invoice' ? '3px solid #22c55e' : '3px solid transparent',
+                        color: activeTab === 'invoice' ? '#22c55e' : '#1f2937',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        transition: 'none'
+                    }}
+                    onClick={() => setActiveTab('invoice')}
+                >
+                    Invoice
                 </button>
             </div>
 
@@ -1474,6 +1563,125 @@ const DataManagementPage = () => {
                             </div>
                         </>
                     )}
+                </div>
+            )}
+
+            {activeTab === 'invoice' && (
+                <div style={{ marginTop: 24 }}>
+                    {message.text && (
+                        <div
+                            style={{
+                                padding: '12px 16px',
+                                marginBottom: 16,
+                                borderRadius: 8,
+                                backgroundColor: message.type === 'error' ? '#fee2e2' : '#d1fae5',
+                                color: message.type === 'error' ? '#991b1b' : '#065f46',
+                                fontSize: 14,
+                                fontWeight: 500
+                            }}
+                        >
+                            {message.text}
+                        </div>
+                    )}
+
+                    <div style={{
+                        backgroundColor: '#f9fafb',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: 8,
+                        padding: 24,
+                        maxWidth: 600
+                    }}>
+                        <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 20, color: textPrimary }}>
+                            Download Payment Invoices
+                        </h3>
+                        <p style={{ fontSize: 14, color: textMuted, marginBottom: 20 }}>
+                            Select a date range to download all payment invoices as a ZIP file. Each invoice will be generated as a PDF in the same design as email invoices.
+                        </p>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
+                            <div>
+                                <label style={{ display: 'block', color: textMuted, fontSize: 12, marginBottom: 6 }}>From Date</label>
+                                <input
+                                    type="date"
+                                    value={invoiceFromDate}
+                                    onChange={(e) => setInvoiceFromDate(e.target.value)}
+                                    style={{
+                                        width: '100%',
+                                        padding: '10px 12px',
+                                        border: `1px solid ${borderColor}`,
+                                        borderRadius: 6,
+                                        backgroundColor: '#ffffff',
+                                        color: textPrimary,
+                                        fontSize: 14
+                                    }}
+                                />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', color: textMuted, fontSize: 12, marginBottom: 6 }}>To Date</label>
+                                <input
+                                    type="date"
+                                    value={invoiceToDate}
+                                    onChange={(e) => setInvoiceToDate(e.target.value)}
+                                    style={{
+                                        width: '100%',
+                                        padding: '10px 12px',
+                                        border: `1px solid ${borderColor}`,
+                                        borderRadius: 6,
+                                        backgroundColor: '#ffffff',
+                                        color: textPrimary,
+                                        fontSize: 14
+                                    }}
+                                />
+                            </div>
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={handleDownloadInvoices}
+                            disabled={!invoiceFromDate || !invoiceToDate || invoiceLoading}
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 10,
+                                backgroundColor: brandGreen,
+                                color: '#ffffff',
+                                border: 'none',
+                                padding: '12px 20px',
+                                borderRadius: 8,
+                                fontWeight: 600,
+                                opacity: !invoiceFromDate || !invoiceToDate || invoiceLoading ? 0.6 : 1,
+                                cursor: !invoiceFromDate || !invoiceToDate || invoiceLoading ? 'not-allowed' : 'pointer',
+                                transition: 'none',
+                                boxShadow: 'none'
+                            }}
+                        >
+                            {invoiceLoading ? (
+                                <>
+                                    <span style={{ display: 'inline-block' }}>...</span>
+                                    Generating Invoices...
+                                </>
+                            ) : (
+                                <>
+                                    <svg aria-hidden viewBox="0 0 24 24" width="18" height="18" style={{ fill: 'currentColor' }}>
+                                        <path d="M12 3a1 1 0 011 1v9.586l2.293-2.293a1 1 0 111.414 1.414l-4.007 4.007a1 1 0 01-1.414 0L7.279 12.707a1 1 0 011.414-1.414L11 13.586V4a1 1 0 011-1z" />
+                                        <path d="M5 19a2 2 0 002 2h10a2 2 0 002-2v-2a1 1 0 10-2 0v2H7v-2a1 1 0 10-2 0v2z" />
+                                    </svg>
+                                    Download Invoices (ZIP)
+                                </>
+                            )}
+                        </button>
+                    </div>
+
+                    <div style={{ marginTop: 24, padding: 16, backgroundColor: '#fef3c7', borderRadius: 8, border: '1px solid #f59e0b' }}>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                            <svg aria-hidden viewBox="0 0 24 24" width="20" height="20" style={{ fill: '#d97706', flexShrink: 0, marginTop: 2 }}>
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+                            </svg>
+                            <div style={{ fontSize: 13, color: '#92400e' }}>
+                                <strong>Note:</strong> This will generate PDF invoices for all successful payments within the selected date range. Large date ranges may take longer to process.
+                            </div>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

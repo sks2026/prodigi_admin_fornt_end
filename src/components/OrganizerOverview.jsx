@@ -20,6 +20,7 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
     const [editCompetitionId, setEditCompetitionId] = useState(null)
     const [reportLoading, setReportLoading] = useState(false)
     const [reportMessage, setReportMessage] = useState({ type: '', text: '' })
+    const [sendingCompetitionId, setSendingCompetitionId] = useState(null)
 
     const handleViewCompetition = (competitionId) => {
         setSelectedCompetitionId(competitionId)
@@ -44,7 +45,7 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
         if (editCompetitionId && organizerData?._id) {
             try {
                 const response = await fetch(
-                    `https://api.prodigiedu.com/api/competitions/getAllByOrganizerId?organizerId=${organizerData._id}`
+                    `http://localhost:3001/api/competitions/getAllByOrganizerId?organizerId=${organizerData._id}`
                 )
                 const data = await response.json()
                 if (response.ok && data.status) {
@@ -73,7 +74,7 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
 
         try {
             const response = await fetch(
-                `https://api.prodigiedu.com/api/competitions/toggleStatus/${competitionId}`,
+                `http://localhost:3001/api/competitions/toggleStatus/${competitionId}`,
                 {
                     method: 'PUT',
                     headers: {
@@ -157,7 +158,7 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
 
         try {
             const response = await fetch(
-                `https://api.prodigiedu.com/api/competitions/duplicate/${competitionId}`,
+                `http://localhost:3001/api/competitions/duplicate/${competitionId}`,
                 {
                     method: 'POST',
                     headers: {
@@ -173,7 +174,7 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
                 // Refresh the competitions list
                 if (organizerData?._id) {
                     const refreshResponse = await fetch(
-                        `https://api.prodigiedu.com/api/competitions/getAllByOrganizerId?organizerId=${organizerData._id}`
+                        `http://localhost:3001/api/competitions/getAllByOrganizerId?organizerId=${organizerData._id}`
                     )
                     const refreshData = await refreshResponse.json()
                     if (refreshResponse.ok && refreshData.status) {
@@ -191,6 +192,45 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
         } catch (err) {
             console.error('Error duplicating competition:', err)
             alert('Failed to duplicate competition. Please try again.')
+        }
+    }
+
+    const handleSendCompetitionReport = async (competitionId, competitionName) => {
+        if (!organizerData?._id) {
+            alert('Organizer data not available')
+            return
+        }
+
+        if (!window.confirm(`Are you sure you want to send the registered students data for "${competitionName}" to the organizer via email?`)) {
+            return
+        }
+
+        setSendingCompetitionId(competitionId)
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/organizer-reports/send-competition-registrations`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    competitionId: competitionId,
+                    organizerId: organizerData._id
+                })
+            })
+
+            const result = await response.json()
+
+            if (response.ok && result.success) {
+                alert(`Registration data sent successfully to ${result.data?.emailSentTo || organizerData.organiserEmail || organizerData.email}`)
+            } else {
+                alert(result.message || 'Failed to send registration data. Please try again.')
+            }
+        } catch (error) {
+            console.error('Error sending competition report:', error)
+            alert('Failed to send registration data. Please try again.')
+        } finally {
+            setSendingCompetitionId(null)
         }
     }
 
@@ -226,7 +266,7 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
 
             try {
                 const response = await fetch(
-                    `https://api.prodigiedu.com/api/competitions/getAllByOrganizerId?organizerId=${organizerData._id}`
+                    `http://localhost:3001/api/competitions/getAllByOrganizerId?organizerId=${organizerData._id}`
                 )
 
                 const data = await response.json()
@@ -268,7 +308,7 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
             setRequestsError('')
 
             try {
-                const response = await fetch(`https://api.prodigiedu.com/api/customer-requests/my-requests/${customerId}`)
+                const response = await fetch(`http://localhost:3001/api/customer-requests/my-requests/${customerId}`)
                 const result = await response.json()
 
                 if (response.ok && result.success && result.data && Array.isArray(result.data.requests)) {
@@ -578,7 +618,7 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
                                             {comp.createdBy || organizerData?.name || 'N/A'}
                                         </td>
                                         <td style={{ padding: '12px 16px' }}>
-                                            <div style={{ display: 'flex', gap: '8px' }}>
+                                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                                                 <button
                                                     type="button"
                                                     onClick={() => handleEditCompetition(comp._id)}
@@ -648,6 +688,51 @@ const OrganizerOverview = ({ onShowHistory, organizerData, onCreateRequest }) =>
                                                     }}
                                                 >
                                                     {comp.iscomplete ? 'Open' : 'Close'}
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleSendCompetitionReport(comp._id, comp.overview?.name)}
+                                                    disabled={sendingCompetitionId === comp._id}
+                                                    title="Send registration data to organizer"
+                                                    style={{
+                                                        padding: '6px 10px',
+                                                        fontSize: '12px',
+                                                        fontWeight: '500',
+                                                        border: '1px solid #16a34a',
+                                                        borderRadius: '4px',
+                                                        cursor: sendingCompetitionId === comp._id ? 'not-allowed' : 'pointer',
+                                                        backgroundColor: '#dcfce7',
+                                                        color: '#16a34a',
+                                                        transition: 'all 0.2s',
+                                                        opacity: sendingCompetitionId === comp._id ? 0.6 : 1,
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center'
+                                                    }}
+                                                    onMouseEnter={(e) => {
+                                                        if (sendingCompetitionId !== comp._id) {
+                                                            e.target.style.backgroundColor = '#bbf7d0'
+                                                        }
+                                                    }}
+                                                    onMouseLeave={(e) => {
+                                                        if (sendingCompetitionId !== comp._id) {
+                                                            e.target.style.backgroundColor = '#dcfce7'
+                                                        }
+                                                    }}
+                                                >
+                                                    {sendingCompetitionId === comp._id ? (
+                                                        <span style={{ fontSize: '14px' }}>...</span>
+                                                    ) : (
+                                                        <svg
+                                                            viewBox="0 0 24 24"
+                                                            width="16"
+                                                            height="16"
+                                                            fill="currentColor"
+                                                            style={{ pointerEvents: 'none' }}
+                                                        >
+                                                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                                                        </svg>
+                                                    )}
                                                 </button>
                                             </div>
                                         </td>
