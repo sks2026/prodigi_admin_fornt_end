@@ -54,7 +54,8 @@ export default function Oregistration({ fun, ID, organizerData }) {
     registrationStartDate: '',
     registrationEndDate: '',
     bankAccount: '', // Remove default bank account
-    bankAccountNumber: ''
+    bankAccountNumber: '',
+    paymentType: 'online' // Default payment type: 'cash', 'online', 'both'
   });
 
   // Safely get bank data from localStorage
@@ -206,7 +207,8 @@ export default function Oregistration({ fun, ID, organizerData }) {
               registrationStartDate: registration_type.registration_start_date || '',
               registrationEndDate: registration_type.registration_end_date || '',
               bankAccount: registration_type.bank_account || '',
-              bankAccountNumber: registration_type.bank_account_number || ''
+              bankAccountNumber: registration_type.bank_account_number || '',
+              paymentType: registration_type.payment_type || 'online'
             });
           }
           
@@ -371,7 +373,8 @@ export default function Oregistration({ fun, ID, organizerData }) {
           registration_start_date: registrationData.registrationStartDate,
           registration_end_date: registrationData.registrationEndDate,
           bank_account: registrationData.bankAccount,
-          bank_account_number: registrationData.bankAccountNumber || ''
+          bank_account_number: registrationData.bankAccountNumber || '',
+          payment_type: registrationData.paymentType || 'online'
         },
         plans: plans.length > 0 ? plans.map(plan => ({
           name: plan.name,
@@ -762,8 +765,8 @@ export default function Oregistration({ fun, ID, organizerData }) {
                 optionLabelProp="label"
               >
                 {bankAccounts.map(account => (
-                  <Select.Option 
-                    key={account.value} 
+                  <Select.Option
+                    key={account.value}
                     value={account.value}
                     label={
                       <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -786,13 +789,104 @@ export default function Oregistration({ fun, ID, organizerData }) {
                   </Select.Option>
                 ))}
               </Select>
-              <Button 
+              <Button
                 size="large"
                 icon={<ReloadOutlined />}
                 onClick={fetchBankAccounts}
                 title="Refresh bank accounts"
               />
             </Space.Compact>
+          </Form.Item>
+
+          {/* Payment Type Selection */}
+          <Form.Item
+            label={<span>Payment Type<span style={{ color: '#ff4d4f' }}>*</span></span>}
+            style={{ marginTop: 24 }}
+          >
+            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+              <label style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                cursor: 'pointer',
+                padding: '12px 20px',
+                border: registrationData.paymentType === 'cash' ? '2px solid #52c41a' : '1px solid #d9d9d9',
+                borderRadius: '8px',
+                backgroundColor: registrationData.paymentType === 'cash' ? '#f6ffed' : '#ffffff',
+                transition: 'all 0.3s ease'
+              }}>
+                <input
+                  type="radio"
+                  name="paymentType"
+                  value="cash"
+                  checked={registrationData.paymentType === 'cash'}
+                  onChange={(e) => updateRegistrationData('paymentType', e.target.value)}
+                  style={{
+                    width: '18px',
+                    height: '18px',
+                    accentColor: '#52c41a'
+                  }}
+                />
+                <span style={{ fontSize: '14px', fontWeight: '500', color: '#262626' }}>Cash Payment</span>
+              </label>
+
+              <label style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                cursor: 'pointer',
+                padding: '12px 20px',
+                border: registrationData.paymentType === 'online' ? '2px solid #52c41a' : '1px solid #d9d9d9',
+                borderRadius: '8px',
+                backgroundColor: registrationData.paymentType === 'online' ? '#f6ffed' : '#ffffff',
+                transition: 'all 0.3s ease'
+              }}>
+                <input
+                  type="radio"
+                  name="paymentType"
+                  value="online"
+                  checked={registrationData.paymentType === 'online'}
+                  onChange={(e) => updateRegistrationData('paymentType', e.target.value)}
+                  style={{
+                    width: '18px',
+                    height: '18px',
+                    accentColor: '#52c41a'
+                  }}
+                />
+                <span style={{ fontSize: '14px', fontWeight: '500', color: '#262626' }}>Online Payment</span>
+              </label>
+
+              <label style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                cursor: 'pointer',
+                padding: '12px 20px',
+                border: registrationData.paymentType === 'both' ? '2px solid #52c41a' : '1px solid #d9d9d9',
+                borderRadius: '8px',
+                backgroundColor: registrationData.paymentType === 'both' ? '#f6ffed' : '#ffffff',
+                transition: 'all 0.3s ease'
+              }}>
+                <input
+                  type="radio"
+                  name="paymentType"
+                  value="both"
+                  checked={registrationData.paymentType === 'both'}
+                  onChange={(e) => updateRegistrationData('paymentType', e.target.value)}
+                  style={{
+                    width: '18px',
+                    height: '18px',
+                    accentColor: '#52c41a'
+                  }}
+                />
+                <span style={{ fontSize: '14px', fontWeight: '500', color: '#262626' }}>Both (Cash & Online)</span>
+              </label>
+            </div>
+            <Text type="secondary" style={{ display: 'block', marginTop: 8, fontSize: 13 }}>
+              {registrationData.paymentType === 'cash' && 'Students will pay in cash directly to the organizer'}
+              {registrationData.paymentType === 'online' && 'Students will pay online through the platform'}
+              {registrationData.paymentType === 'both' && 'Students can choose between cash or online payment'}
+            </Text>
           </Form.Item>
 
           <Divider style={{ margin: '32px 0', borderColor: '#f0f0f0' }} />
