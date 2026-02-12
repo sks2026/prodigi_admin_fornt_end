@@ -44,6 +44,10 @@ const Orightcontaint = ({ fun, ID, organizerData }) => {
     name: "",
     image: "",
     description: "",
+    participation: "Individual",
+    applicant: "Self",
+    teamSizeMin: "",
+    teamSizeMax: "",
     stages: [
       {
         id: Date.now(),
@@ -363,7 +367,13 @@ const Orightcontaint = ({ fun, ID, organizerData }) => {
     const isOverviewValid =
       competitionData.name.trim() !== "" &&
       stripHtml(competitionData.description).trim() !== "" &&
-      competitionData.image !== "";
+      competitionData.image !== "" &&
+      competitionData.participation?.trim() !== "" &&
+      competitionData.applicant?.trim() !== "" &&
+      (competitionData.participation === "Individual" ||
+       (competitionData.teamSizeMin && competitionData.teamSizeMax &&
+        parseInt(competitionData.teamSizeMin) > 0 &&
+        parseInt(competitionData.teamSizeMax) >= parseInt(competitionData.teamSizeMin)));
 
     const areStagesValid = competitionData.stages.every(
       (stage) =>
@@ -392,7 +402,7 @@ const Orightcontaint = ({ fun, ID, organizerData }) => {
     });
 
     setIsFormValid(formValid);
-  }, [competitionData.name, competitionData.description, competitionData.image, competitionData.stages]);
+  }, [competitionData.name, competitionData.description, competitionData.image, competitionData.participation, competitionData.applicant, competitionData.teamSizeMin, competitionData.teamSizeMax, competitionData.stages]);
 
   // Save to localStorage when competitionData changes (debounced)
   useEffect(() => {
@@ -450,7 +460,14 @@ const Orightcontaint = ({ fun, ID, organizerData }) => {
     if (saved) {
       try {
         const savedData = JSON.parse(saved);
-        setCompetitionData(savedData);
+        const dataWithDefaults = {
+          ...savedData,
+          participation: savedData.participation || "Individual",
+          applicant: savedData.applicant || "Self",
+          teamSizeMin: savedData.teamSizeMin || "",
+          teamSizeMax: savedData.teamSizeMax || "",
+        };
+        setCompetitionData(dataWithDefaults);
         
         // Set image preview if available
         if (savedData.image) {
@@ -518,6 +535,10 @@ const Orightcontaint = ({ fun, ID, organizerData }) => {
           name: fetchedData.name || "",
           description: fetchedData.description || "",
           image: fetchedData.image || "",
+          participation: fetchedData.participation || "Individual",
+          applicant: fetchedData.applicant || "Self",
+          teamSizeMin: fetchedData.teamSizeMin || "",
+          teamSizeMax: fetchedData.teamSizeMax || "",
           stages: normalizedStages,
         };
 
@@ -568,7 +589,7 @@ const Orightcontaint = ({ fun, ID, organizerData }) => {
         localStorage.setItem(localKey, JSON.stringify(dataToSave));
       }
     }
-  }, [competitionId, competitionData.name, competitionData.description, competitionData.stages]);
+  }, [competitionId, competitionData.name, competitionData.description, competitionData.participation, competitionData.applicant, competitionData.teamSizeMin, competitionData.teamSizeMax, competitionData.stages]);
 
   // Save or update competition data
   const handleSave = useCallback(async () => {
@@ -577,7 +598,15 @@ const Orightcontaint = ({ fun, ID, organizerData }) => {
       formdata.append("organizerId", organizerId);
       formdata.append("name", competitionData.name);
       formdata.append("description", competitionData.description);
-      
+      formdata.append("participation", competitionData.participation);
+      formdata.append("applicant", competitionData.applicant);
+      if (competitionData.teamSizeMin) {
+        formdata.append("teamSizeMin", competitionData.teamSizeMin);
+      }
+      if (competitionData.teamSizeMax) {
+        formdata.append("teamSizeMax", competitionData.teamSizeMax);
+      }
+
       // Handle image data properly
       if (competitionData.image) {
         if (competitionData.image instanceof File) {
@@ -632,7 +661,7 @@ const Orightcontaint = ({ fun, ID, organizerData }) => {
       backgroundColor: "#fff",
       minHeight: "100vh",
       paddingBottom: "120px"
-    }}>\
+    }}>
       <Title
         level={2}
         style={{ marginBottom: "24px", color: "#000", fontWeight: 500 }}
@@ -777,6 +806,137 @@ const Orightcontaint = ({ fun, ID, organizerData }) => {
           />
         </Card>
       </div>
+
+      {/* Participation, Applicant, and Team Size Section */}
+      <Row gutter={24} style={{ marginBottom: "32px" }}>
+        <Col span={8}>
+          <Space direction="vertical" style={{ width: "100%" }}>
+            <Text strong style={{ color: "#000", fontSize: "14px" }}>
+              Participation<span style={{ color: "#ef4444" }}>*</span>
+            </Text>
+            <div style={{ display: "flex", gap: "8px" }}>
+              <button
+                onClick={() => {
+                  updateCompetitionField("participation", "Individual");
+                  if (competitionData.participation === "Team") {
+                    updateCompetitionField("teamSizeMin", "");
+                    updateCompetitionField("teamSizeMax", "");
+                  }
+                }}
+                style={{
+                  padding: "8px 24px",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  border: "1px solid #6BAB58",
+                  cursor: "pointer",
+                  backgroundColor: competitionData.participation === "Individual" ? "#6BAB58" : "#fff",
+                  color: competitionData.participation === "Individual" ? "#ffffff" : "#6BAB58",
+                  borderRadius: "25px",
+                  transition: "all 0.2s ease",
+                  minWidth: "100px",
+                }}
+              >
+                Individual
+              </button>
+              <button
+                onClick={() => updateCompetitionField("participation", "Team")}
+                style={{
+                  padding: "8px 24px",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  border: "1px solid #6BAB58",
+                  cursor: "pointer",
+                  backgroundColor: competitionData.participation === "Team" ? "#6BAB58" : "#fff",
+                  color: competitionData.participation === "Team" ? "#ffffff" : "#6BAB58",
+                  borderRadius: "25px",
+                  transition: "all 0.2s ease",
+                  minWidth: "100px",
+                }}
+              >
+                Team
+              </button>
+            </div>
+          </Space>
+        </Col>
+        <Col span={8}>
+          <Space direction="vertical" style={{ width: "100%" }}>
+            <Text strong style={{ color: "#000", fontSize: "14px" }}>
+              Applicant<span style={{ color: "#ef4444" }}>*</span>
+            </Text>
+            <div style={{ display: "flex", gap: "8px" }}>
+              <button
+                onClick={() => updateCompetitionField("applicant", "Self")}
+                style={{
+                  padding: "8px 24px",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  border: "1px solid #6BAB58",
+                  cursor: "pointer",
+                  backgroundColor: competitionData.applicant === "Self" ? "#6BAB58" : "#fff",
+                  color: competitionData.applicant === "Self" ? "#ffffff" : "#6BAB58",
+                  borderRadius: "25px",
+                  transition: "all 0.2s ease",
+                  minWidth: "100px",
+                }}
+              >
+                Self
+              </button>
+              <button
+                onClick={() => updateCompetitionField("applicant", "School")}
+                style={{
+                  padding: "8px 24px",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  border: "1px solid #6BAB58",
+                  cursor: "pointer",
+                  backgroundColor: competitionData.applicant === "School" ? "#6BAB58" : "#fff",
+                  color: competitionData.applicant === "School" ? "#ffffff" : "#6BAB58",
+                  borderRadius: "25px",
+                  transition: "all 0.2s ease",
+                  minWidth: "100px",
+                }}
+              >
+                School
+              </button>
+            </div>
+          </Space>
+        </Col>
+        {competitionData.participation === "Team" && (
+          <Col span={8}>
+            <Space direction="vertical" style={{ width: "100%" }}>
+              <Text strong style={{ color: "#000", fontSize: "14px" }}>
+                Team Size
+              </Text>
+              <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <Text style={{ fontSize: "14px", color: "#666", minWidth: "40px" }}>Min.</Text>
+                  <Input
+                    type="number"
+                    placeholder="Enter"
+                    value={competitionData.teamSizeMin}
+                    onChange={(e) => updateCompetitionField("teamSizeMin", e.target.value)}
+                    size="large"
+                    style={{ width: "100px", height: "40px" }}
+                    min="1"
+                  />
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <Text style={{ fontSize: "14px", color: "#666", minWidth: "40px" }}>Max.</Text>
+                  <Input
+                    type="number"
+                    placeholder="Enter"
+                    value={competitionData.teamSizeMax}
+                    onChange={(e) => updateCompetitionField("teamSizeMax", e.target.value)}
+                    size="large"
+                    style={{ width: "100px", height: "40px" }}
+                    min={competitionData.teamSizeMin || 1}
+                  />
+                </div>
+              </div>
+            </Space>
+          </Col>
+        )}
+      </Row>
 
       <div>
         <Title level={3} style={{ marginBottom: "16px", color: "#000" }}>
